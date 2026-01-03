@@ -174,7 +174,7 @@ claude login
 
 **2. Clone Mavric**
 ```bash
-git clone https://github.com/mavrictech/devenv.git
+git clone https://github.com/mavric/devenv.git
 cd devenv
 ```
 
@@ -228,6 +228,6 @@ Explore all available AI skills.
 
 <div style="text-align: center; margin-top: 2rem; color: var(--md-default-fg-color--light);" markdown>
 
-Built by [Mavric](https://mavrictech.com)
+Built by [Mavric](https://mavric.com)
 
 </div>

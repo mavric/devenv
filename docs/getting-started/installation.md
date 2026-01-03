@@ -104,7 +104,7 @@ mkdir my-saas-project
 cd my-saas-project
 
 # Copy the toolchain (without git history)
-npx degit mavrictech/devenv/install .
+npx degit mavric/devenv/install .
 
 # Initialize your own git repo
 git init
@@ -120,7 +120,7 @@ git commit -m "Initial commit: Mavric toolchain setup"
 ```bash
 mkdir my-saas-project
 cd my-saas-project
-git clone --depth 1 https://github.com/mavrictech/devenv.git temp
+git clone --depth 1 https://github.com/mavric/devenv.git temp
 mv temp/install/* temp/install/.* . 2>/dev/null
 rm -rf temp
 git init
@@ -197,7 +197,7 @@ To add Mavric AI Toolchain to an existing project:
 cd /path/to/your/project
 
 # Copy toolchain into your project
-npx degit mavrictech/devenv/install .
+npx degit mavric/devenv/install .
 ```
 
 Or manually:
@@ -225,7 +225,7 @@ If you want to contribute to Mavric AI Toolchain:
 
 ```bash
 # Clone with full history
-git clone https://github.com/mavrictech/devenv.git
+git clone https://github.com/mavric/devenv.git
 cd devenv
 
 # Install documentation dependencies (for local preview)
@@ -247,8 +247,8 @@ To update to the latest toolchain version:
 cd my-saas-project
 
 # Pull latest toolchain files (preserves your customizations)
-npx degit mavrictech/devenv/install/.claude .claude --force
-npx degit mavrictech/devenv/install/.devenv .devenv --force
+npx degit mavric/devenv/install/.claude .claude --force
+npx degit mavric/devenv/install/.devenv .devenv --force
 ```
 
 !!! tip "What Gets Updated"

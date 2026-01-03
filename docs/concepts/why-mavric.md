@@ -513,7 +513,7 @@ npm install -g @anthropic-ai/claude-code
 claude login
 
 # Clone Mavric
-git clone https://github.com/mavrictech/devenv.git
+git clone https://github.com/mavric/devenv.git
 cd devenv
 
 # Start Claude Code

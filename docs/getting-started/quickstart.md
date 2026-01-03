@@ -53,7 +53,7 @@ mkdir my-saas-project
 cd my-saas-project
 
 # Copy the toolchain (without git history)
-npx degit mavrictech/devenv/install .
+npx degit mavric/devenv/install .
 
 # Initialize your own git repo
 git init
@@ -71,7 +71,7 @@ mkdir my-saas-project
 cd my-saas-project
 
 # Clone and extract install folder
-git clone --depth 1 https://github.com/mavrictech/devenv.git temp
+git clone --depth 1 https://github.com/mavric/devenv.git temp
 mv temp/install/* temp/install/.* . 2>/dev/null
 rm -rf temp
 

@@ -311,7 +311,7 @@ Guided user onboarding.
 Have a SaaS capability you'd like to see?
 
 1. **Check existing patterns** - It may already be possible with current tools
-2. **Request via GitHub** - Open an issue at [mavrictech/devenv](https://github.com/mavrictech/devenv/issues)
+2. **Request via GitHub** - Open an issue at [mavric/devenv](https://github.com/mavric/devenv/issues)
 3. **Contribute** - PRs welcome for new capabilities
 
 ---

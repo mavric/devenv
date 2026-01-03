@@ -1,8 +1,8 @@
 site_name: Mavric AI Toolchain
 site_description: Mavric's AI-Assisted Development Toolchain for building production-ready SaaS applications
-site_url: https://mavrictech.github.io/devenv
-repo_url: https://github.com/mavrictech/devenv
-repo_name: mavrictech/devenv
+site_url: https://mavric.github.io/devenv
+repo_url: https://github.com/mavric/devenv
+repo_name: mavric/devenv
 
 theme:
   name: material
@@ -92,9 +92,9 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/mavrictech/devenv
+      link: https://github.com/mavric/devenv
     - icon: fontawesome/solid/globe
-      link: https://mavrictech.com
+      link: https://mavric.com
   generator: false
 
 extra_css:
