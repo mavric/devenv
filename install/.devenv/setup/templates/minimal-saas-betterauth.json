@@ -1,0 +1,306 @@
+{
+  "$schema": "https://apsolib.com/schemas/apsorc.schema.json",
+  "entities": [
+    {
+      "name": "user",
+      "comment": "BetterAuth core user table - DO NOT rename. Stores authentication credentials and basic user info.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique user identifier (BetterAuth uses string IDs by default)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "comment": "User's full display name"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "unique": true,
+          "comment": "Primary email for authentication (must be unique)"
+        },
+        {
+          "name": "emailVerified",
+          "type": "boolean",
+          "comment": "Whether email has been verified via verification token"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "optional": true,
+          "comment": "Profile image URL (optional, often from OAuth providers)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Account creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last profile update timestamp"
+        }
+      ]
+    },
+    {
+      "name": "session",
+      "comment": "BetterAuth session table - DO NOT rename. Tracks active user sessions across devices.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique session identifier (token)"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "comment": "Session expiration time for auto-logout"
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "unique": true,
+          "comment": "Session token sent to client (must be unique)"
+        },
+        {
+          "name": "ipAddress",
+          "type": "string",
+          "optional": true,
+          "comment": "IP address of session for security tracking"
+        },
+        {
+          "name": "userAgent",
+          "type": "string",
+          "optional": true,
+          "comment": "Browser/device info for session management"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Session creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last session activity timestamp"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        }
+      ]
+    },
+    {
+      "name": "account",
+      "comment": "BetterAuth account table - DO NOT rename. Stores OAuth provider connections (Google, GitHub, etc).",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique account identifier"
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "comment": "Provider's unique ID for this user (e.g., Google user ID)"
+        },
+        {
+          "name": "providerId",
+          "type": "string",
+          "comment": "OAuth provider identifier (google, github, etc)"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table (one user can have multiple OAuth accounts)"
+        },
+        {
+          "name": "accessToken",
+          "type": "string",
+          "optional": true,
+          "comment": "OAuth access token for API calls to provider"
+        },
+        {
+          "name": "refreshToken",
+          "type": "string",
+          "optional": true,
+          "comment": "OAuth refresh token for renewing access"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "optional": true,
+          "comment": "When the access token expires"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "optional": true,
+          "comment": "Hashed password for email/password auth (null for OAuth-only)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "When provider was linked"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last token refresh timestamp"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        }
+      ]
+    },
+    {
+      "name": "verification",
+      "comment": "BetterAuth verification table - DO NOT rename. Handles email verification and password reset tokens.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique verification request ID"
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "comment": "Email address being verified"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "comment": "Verification token/code sent to user"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "comment": "Token expiration time (typically 15-60 minutes)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "optional": true,
+          "comment": "When verification was requested"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Last update timestamp"
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "comment": "Multi-tenant organization/workspace entity. Each org is a separate tenant with its own data.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique organization identifier (auto-generated UUID)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "comment": "Organization display name (e.g., 'Acme Corp')"
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "unique": true,
+          "comment": "URL-safe identifier (e.g., 'acme-corp' for acme-corp.yourapp.com)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Organization creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last update timestamp"
+        }
+      ]
+    },
+    {
+      "name": "AccountUser",
+      "comment": "Junction table linking users to organizations with roles. Enables multi-tenancy and team collaboration.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique membership record ID"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization table"
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "comment": "User's role in this org (owner, admin, member, viewer, etc)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "When user joined organization"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last role/status update"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["userId", "organizationId"],
+          "unique": true,
+          "comment": "Prevent duplicate memberships - user can only join org once"
+        },
+        {
+          "fields": ["organizationId"],
+          "comment": "Fast lookup of all members in an organization"
+        }
+      ]
+    }
+  ]
+}

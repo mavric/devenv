@@ -1,0 +1,687 @@
+---
+description: Security standards and best practices for full-stack applications
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+alwaysApply: true
+---
+
+# Rule: Security Standards
+
+This rule defines security requirements and best practices for building secure, production-ready applications. All code must adhere to these standards to prevent common vulnerabilities.
+
+---
+
+## Authentication & Authorization
+
+### JWT Token Standards
+
+**Token Configuration:**
+```typescript
+{
+  algorithm: 'RS256',              // Asymmetric (public/private key)
+  expiresIn: '15m',               // Access token: 15 minutes
+  refreshExpiresIn: '7d',         // Refresh token: 7 days
+  issuer: 'your-app-name',
+  audience: 'your-app-users'
+}
+```
+
+**Required Claims:**
+- `sub` - User ID
+- `iat` - Issued at timestamp
+- `exp` - Expiration timestamp
+- `scope` - Permissions/roles
+- `tenant_id` - Organization/workspace ID (for multi-tenancy)
+
+**Token Storage:**
+- Access tokens: Memory only (never localStorage)
+- Refresh tokens: httpOnly cookies with SameSite=Strict
+- Never log tokens or include in error messages
+
+**Token Validation:**
+```typescript
+// Example validation middleware
+async function validateToken(token: string): Promise<TokenPayload> {
+  // 1. Verify signature
+  const payload = jwt.verify(token, publicKey, {
+    algorithms: ['RS256'],
+    issuer: 'your-app-name',
+  });
+
+  // 2. Check expiration
+  if (Date.now() >= payload.exp * 1000) {
+    throw new UnauthorizedError('Token expired');
+  }
+
+  // 3. Validate claims
+  if (!payload.sub || !payload.tenant_id) {
+    throw new UnauthorizedError('Invalid token claims');
+  }
+
+  return payload;
+}
+```
+
+### Authorization Patterns
+
+**Role-Based Access Control (RBAC):**
+```typescript
+// Define roles and permissions
+enum Role {
+  USER = 'user',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'superadmin'
+}
+
+const rolePermissions = {
+  user: ['read:own', 'write:own'],
+  admin: ['read:all', 'write:all', 'delete:own'],
+  superadmin: ['*']
+};
+
+// Decorator for protecting routes (NestJS example)
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('admin', 'superadmin')
+@Get('/users')
+async getUsers() { ... }
+```
+
+**Multi-Tenancy Isolation:**
+```typescript
+// CRITICAL: Always filter by tenant/workspace
+async function getUsersByWorkspace(workspaceId: string) {
+  // Include workspace check in ALL queries
+  return db.user.findMany({
+    where: {
+      workspaceId: workspaceId,
+      deletedAt: null
+    }
+  });
+}
+
+// Use middleware to extract and validate workspace
+function workspaceMiddleware(req, res, next) {
+  const { workspaceId } = req.user; // From JWT
+  const { workspaceId: requestedWorkspace } = req.params;
+
+  if (workspaceId !== requestedWorkspace) {
+    throw new ForbiddenError('Access denied to this workspace');
+  }
+
+  req.workspace = workspaceId;
+  next();
+}
+```
+
+---
+
+## Input Validation & Sanitization
+
+### Validation Requirements
+
+**All user input MUST be validated:**
+- Client-side (for UX)
+- Server-side (for security)
+
+**Use Schema Validation:**
+```typescript
+// Use Zod for runtime validation
+import { z } from 'zod';
+
+const CreateUserSchema = z.object({
+  email: z.string().email().max(255),
+  name: z.string().min(1).max(100),
+  password: z.string().min(8).max(128)
+    .regex(/[A-Z]/, 'Must contain uppercase')
+    .regex(/[a-z]/, 'Must contain lowercase')
+    .regex(/[0-9]/, 'Must contain number'),
+  age: z.number().int().min(0).max(150).optional(),
+});
+
+// Validate in API handler
+function createUser(req, res) {
+  const result = CreateUserSchema.safeParse(req.body);
+
+  if (!result.success) {
+    return res.status(400).json({
+      error: 'VALIDATION_ERROR',
+      details: result.error.flatten()
+    });
+  }
+
+  // Use validated data
+  const userData = result.data;
+  // ...
+}
+```
+
+### SQL Injection Prevention
+
+**NEVER use string concatenation for queries:**
+```typescript
+// ❌ DANGEROUS - SQL Injection vulnerability
+const userId = req.params.id;
+db.query(`SELECT * FROM users WHERE id = '${userId}'`);
+
+// ✅ SAFE - Use parameterized queries
+db.query('SELECT * FROM users WHERE id = ?', [userId]);
+
+// ✅ SAFE - Use ORM (TypeORM example)
+userRepository.findOne({ where: { id: userId } });
+
+// ✅ SAFE - Use query builder
+userRepository.createQueryBuilder('user')
+  .where('user.id = :id', { id: userId })
+  .getOne();
+```
+
+**Raw SQL Rules:**
+- Only use when ORM is insufficient
+- Always use parameterized queries
+- Never interpolate user input
+- Require code review for all raw SQL
+
+### XSS Prevention
+
+**HTML Sanitization:**
+```typescript
+import DOMPurify from 'isomorphic-dompurify';
+
+// Sanitize HTML content before rendering
+function sanitizeHTML(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a'],
+    ALLOWED_ATTR: ['href', 'target']
+  });
+}
+
+// React: Use dangerouslySetInnerHTML ONLY with sanitized content
+<div dangerouslySetInnerHTML={{ __html: sanitizeHTML(userContent) }} />
+```
+
+**Content Security Policy (CSP):**
+```typescript
+// Next.js middleware or server headers
+const securityHeaders = {
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://trusted-cdn.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    "connect-src 'self' https://api.yourapp.com",
+    "frame-ancestors 'none'"
+  ].join('; ')
+};
+```
+
+### File Upload Security
+
+**Validation Rules:**
+```typescript
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'application/pdf'
+];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+async function validateFileUpload(file: File): Promise<void> {
+  // 1. Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    throw new ValidationError('File too large');
+  }
+
+  // 2. Check MIME type
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    throw new ValidationError('Invalid file type');
+  }
+
+  // 3. Verify magic bytes (prevent MIME type spoofing)
+  const buffer = await file.arrayBuffer();
+  const fileType = await import('file-type');
+  const detected = await fileType.fromBuffer(buffer);
+
+  if (!detected || !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+    throw new ValidationError('File type mismatch');
+  }
+
+  // 4. Scan for viruses (production requirement)
+  // await scanForViruses(buffer);
+}
+```
+
+---
+
+## Network Security
+
+### CORS Configuration
+
+**Strict CORS Policy:**
+```typescript
+// Backend CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy violation'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['X-Request-Id'],
+  maxAge: 86400 // 24 hours
+};
+
+// Apply to Express/NestJS
+app.use(cors(corsOptions));
+```
+
+**Environment Variables:**
+```bash
+# Development
+ALLOWED_ORIGINS=http://localhost:3000
+
+# Production
+ALLOWED_ORIGINS=https://app.example.com,https://www.example.com
+```
+
+### Rate Limiting
+
+**API Rate Limits:**
+```typescript
+import rateLimit from 'express-rate-limit';
+
+// General API rate limit
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window
+  message: 'Too many requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // 5 attempts per 15 minutes
+  skipSuccessfulRequests: true,
+});
+
+// Apply to routes
+app.use('/api/', apiLimiter);
+app.use('/auth/login', authLimiter);
+```
+
+**Redis-backed Rate Limiting (Scalable):**
+```typescript
+import { RateLimiterRedis } from 'rate-limiter-flexible';
+
+const rateLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  points: 100, // Number of requests
+  duration: 900, // Per 15 minutes
+  blockDuration: 900, // Block for 15 minutes after limit
+});
+
+// Middleware
+async function rateLimitMiddleware(req, res, next) {
+  try {
+    await rateLimiter.consume(req.ip);
+    next();
+  } catch (error) {
+    res.status(429).json({ error: 'Too Many Requests' });
+  }
+}
+```
+
+### Security Headers
+
+**Required HTTP Headers:**
+```typescript
+// Apply these headers to all responses
+const securityHeaders = {
+  // Prevent clickjacking
+  'X-Frame-Options': 'DENY',
+
+  // Prevent MIME type sniffing
+  'X-Content-Type-Options': 'nosniff',
+
+  // XSS protection (legacy browsers)
+  'X-XSS-Protection': '1; mode=block',
+
+  // Force HTTPS
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+
+  // Referrer policy
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+
+  // Permissions policy
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+
+  // Content Security Policy (defined above)
+  'Content-Security-Policy': '...',
+};
+
+// Next.js config
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: Object.entries(securityHeaders).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      },
+    ];
+  },
+};
+```
+
+---
+
+## Secrets Management
+
+### Secret Storage
+
+**NEVER commit secrets to source control:**
+```bash
+# ❌ NEVER DO THIS
+API_KEY=sk_live_abc123xyz
+
+# ✅ Use environment variables
+API_KEY=${SECRET_API_KEY}
+
+# ✅ Use secret management service
+# AWS Secrets Manager, HashiCorp Vault, etc.
+```
+
+**Secret Rotation:**
+- Rotate secrets every 90 days
+- Automate rotation where possible
+- Support grace period for key rotation
+- Log all secret access for audit
+
+**Accessing Secrets at Runtime:**
+```typescript
+// AWS Secrets Manager example
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+
+const client = new SecretsManagerClient({ region: 'us-east-1' });
+
+async function getSecret(secretName: string): Promise<any> {
+  const command = new GetSecretValueCommand({ SecretId: secretName });
+  const response = await client.send(command);
+
+  if (response.SecretString) {
+    return JSON.parse(response.SecretString);
+  }
+
+  throw new Error('Secret not found');
+}
+
+// Cache secrets for performance
+let cachedApiKey: string | null = null;
+
+async function getApiKey(): Promise<string> {
+  if (!cachedApiKey) {
+    const secret = await getSecret('prod/api-keys');
+    cachedApiKey = secret.apiKey;
+  }
+  return cachedApiKey;
+}
+```
+
+### Environment Variables
+
+**Type-safe Environment Variables:**
+```typescript
+import { z } from 'zod';
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  DATABASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  API_KEY: z.string().min(1),
+  ALLOWED_ORIGINS: z.string(),
+  // NEVER expose secrets to client
+  NEXT_PUBLIC_API_URL: z.string().url(),
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+**Client-side Environment Variables:**
+- Prefix with `NEXT_PUBLIC_` (Next.js) or equivalent
+- NEVER include API keys or secrets
+- Only include public configuration (API URLs, feature flags)
+
+---
+
+## Encryption
+
+### Data at Rest
+
+**Database Encryption:**
+- Enable encryption at rest for all databases (RDS, DynamoDB)
+- Use AWS KMS for key management
+- Rotate encryption keys annually
+
+**File Storage Encryption:**
+```typescript
+// S3 server-side encryption
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+const s3Client = new S3Client({ region: 'us-east-1' });
+
+async function uploadFile(file: Buffer, key: string) {
+  await s3Client.send(new PutObjectCommand({
+    Bucket: 'your-bucket',
+    Key: key,
+    Body: file,
+    ServerSideEncryption: 'AES256', // or 'aws:kms'
+  }));
+}
+```
+
+### Data in Transit
+
+**HTTPS Everywhere:**
+- All API endpoints MUST use HTTPS
+- Redirect HTTP to HTTPS
+- Use TLS 1.2 or higher
+- Use strong cipher suites
+
+**Certificate Management:**
+- Use AWS Certificate Manager or Let's Encrypt
+- Automate certificate renewal
+- Monitor certificate expiration
+
+---
+
+## Audit Logging
+
+### Required Events
+
+Log the following security events:
+- ✅ Authentication attempts (success/failure)
+- ✅ Authorization failures
+- ✅ Data modifications (CREATE/UPDATE/DELETE)
+- ✅ Configuration changes
+- ✅ Secret access
+- ✅ Admin actions
+- ✅ Failed validation attempts
+- ✅ Rate limit violations
+
+### Log Format
+
+```typescript
+interface AuditLog {
+  timestamp: string;        // ISO-8601
+  eventType: string;        // 'auth.login', 'data.create', etc.
+  userId: string;
+  tenantId: string;
+  action: string;
+  resource: string;
+  result: 'success' | 'failure';
+  ipAddress: string;
+  userAgent: string;
+  metadata?: Record<string, any>;
+}
+
+// Example logging
+function logAuditEvent(event: AuditLog) {
+  console.log(JSON.stringify({
+    ...event,
+    timestamp: new Date().toISOString(),
+  }));
+}
+
+// Usage
+logAuditEvent({
+  eventType: 'data.delete',
+  userId: req.user.id,
+  tenantId: req.user.tenantId,
+  action: 'DELETE',
+  resource: `/api/users/${userId}`,
+  result: 'success',
+  ipAddress: req.ip,
+  userAgent: req.headers['user-agent'],
+});
+```
+
+### Log Retention
+
+- Security logs: 2 years minimum
+- Application logs: 90 days
+- Access logs: 1 year
+- Use log aggregation service (CloudWatch, Datadog, etc.)
+
+---
+
+## Dependency Security
+
+### Dependency Scanning
+
+**Required in CI/CD:**
+```yaml
+# .github/workflows/security.yml
+name: Security Scan
+
+on: [pull_request]
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run Snyk scan
+        run: npx snyk test --severity-threshold=high
+```
+
+**Dependency Management:**
+- Run `npm audit` weekly
+- Update dependencies monthly
+- Block deployments with high/critical vulnerabilities
+- Use Dependabot or Renovate for automated updates
+
+### License Compliance
+
+**Approved Licenses:**
+- MIT, Apache 2.0, BSD, ISC: ✅ Allowed
+- GPL, AGPL: ❌ Prohibited (copyleft issues)
+- Unknown licenses: ❌ Require legal review
+
+---
+
+## Security Checklist
+
+### Before Deployment
+
+- [ ] All secrets stored in secret manager (not .env)
+- [ ] HTTPS enabled with valid certificate
+- [ ] CORS configured with allowed origins only
+- [ ] Rate limiting enabled on all public endpoints
+- [ ] Security headers configured
+- [ ] Input validation on all endpoints
+- [ ] Authentication required (except public routes)
+- [ ] Authorization checks implemented
+- [ ] SQL injection prevention verified
+- [ ] XSS protection verified
+- [ ] File upload validation implemented
+- [ ] Audit logging enabled
+- [ ] Dependency scan passed
+- [ ] Security code review completed
+
+### Monthly Security Review
+
+- [ ] Review audit logs for suspicious activity
+- [ ] Check for dependency vulnerabilities
+- [ ] Verify secret rotation is up to date
+- [ ] Review user permissions
+- [ ] Test disaster recovery procedures
+- [ ] Update security documentation
+
+---
+
+## Incident Response
+
+### Security Incident Classification
+
+**P1 - Critical:**
+- Active breach or data leak
+- Authentication bypass
+- Complete service outage
+
+**P2 - High:**
+- Vulnerability discovered in production
+- Unauthorized access attempt
+- DDoS attack
+
+**P3 - Medium:**
+- Security misconfiguration
+- Failed security scan
+- Expired certificates
+
+### Response Procedure
+
+1. **Detect**: Monitor logs and alerts
+2. **Contain**: Isolate affected systems
+3. **Investigate**: Determine scope and impact
+4. **Remediate**: Fix vulnerability
+5. **Recover**: Restore normal operations
+6. **Document**: Write post-mortem
+
+---
+
+## References
+
+- **OWASP Top 10**: https://owasp.org/www-project-top-ten/
+- **CWE Top 25**: https://cwe.mitre.org/top25/
+- **NIST Cybersecurity Framework**: https://www.nist.gov/cyberframework
+
+---
+
+**Version:** 1.0
+**Last Updated:** 2025-01-11
+**Status:** Production-ready security standards

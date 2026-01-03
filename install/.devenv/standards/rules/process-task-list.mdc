@@ -1,0 +1,341 @@
+---
+description: Task list management and workflow guidelines
+globs: ["**/tasks.md", "**/TODO.md", "**/TASKS.md"]
+alwaysApply: false
+---
+
+# Rule: Task List Management
+
+This rule defines how to work with task lists in markdown files for tracking project progress.
+
+---
+
+## Task Workflow Modes
+
+### Autonomous Mode (Default)
+
+Work through tasks independently:
+
+1. **Select next task** - Choose the next uncompleted `[ ]` task in order
+2. **Implement** - Write code and tests
+3. **Verify** - Run tests to ensure they pass
+4. **Update** - Mark task `[x]` and update relevant files list
+5. **Continue** - Move to next task
+
+**When to ask for input:**
+- Requirements are ambiguous
+- Multiple valid approaches exist
+- Breaking changes are needed
+- Architecture decisions required
+- Encountering unexpected blockers
+
+### Supervised Mode (On User Request)
+
+If user requests step-by-step approval:
+
+1. **Show next task** - Display current task and next 2-3 upcoming tasks
+2. **Wait for approval** - User says "continue", "yes", or "y"
+3. **Implement task** - Complete the approved task
+4. **Repeat** - Go back to step 1
+
+**Activation:** User says "ask before each task" or "supervised mode"
+
+---
+
+## Task Execution Guidelines
+
+### Task Selection
+
+**Order of Execution:**
+1. Follow the order tasks appear in the file (top to bottom)
+2. Skip tasks with unmet dependencies
+3. Work on subtasks before parent tasks
+4. Respect phase boundaries if defined
+
+**Example:**
+```markdown
+- [ ] Phase 1: Setup
+  - [x] Install dependencies
+  - [ ] Configure environment  ← Start here
+  - [ ] Setup database
+- [ ] Phase 2: Features
+  - [ ] Build login page       ← Skip (Phase 1 not done)
+```
+
+### Marking Tasks Complete
+
+**When to mark `[x]`:**
+- Code is written and tested
+- Tests are passing
+- Code is committed (if working with git)
+
+**Immediate updates:**
+- Mark subtasks `[x]` as soon as they're done
+- Mark parent task `[x]` only when ALL subtasks are `[x]`
+- Update task list file after each completion
+
+**Example:**
+```markdown
+- [ ] User Authentication
+  - [x] Create login form
+  - [x] Implement JWT validation
+  - [x] Add error handling
+  - [ ] Write integration tests  ← Currently working on this
+```
+
+---
+
+## Git Workflow Integration
+
+### When to Commit
+
+**Commit frequency:**
+- After completing logical units of work
+- When tests pass
+- Before switching to different feature
+- At natural breakpoints (end of day, before meetings)
+
+**Don't wait for:**
+- Entire feature completion
+- All subtasks to be done
+- Perfect code (iterate and improve)
+
+### Commit Message Format
+
+Use conventional commits:
+
+```bash
+# Format
+git commit -m "<type>: <short description>
+
+<optional detailed explanation>
+<optional breaking changes>
+<optional issue references>"
+
+# Common types
+feat:     # New feature
+fix:      # Bug fix
+refactor: # Code improvement without behavior change
+test:     # Add or update tests
+docs:     # Documentation changes
+chore:    # Tooling, dependencies, config
+```
+
+**Examples:**
+
+```bash
+# Simple commit
+git commit -m "feat: add user login form"
+
+# Detailed commit
+git commit -m "feat: add JWT authentication
+
+- Implement token generation and validation
+- Add refresh token support
+- Create auth middleware for protected routes
+
+Closes #42"
+
+# Bug fix
+git commit -m "fix: resolve null pointer in user service
+
+User service was not checking for null before accessing
+user.email property, causing crashes when user not found.
+
+Fixes #103"
+```
+
+### Commit Workflow
+
+```bash
+# 1. Check what changed
+git status
+
+# 2. Run tests
+npm test
+
+# 3. Stage changes (if tests pass)
+git add .
+
+# 4. Commit with descriptive message
+git commit -m "feat: implement user profile page"
+
+# 5. Mark task as complete
+# Update task list file: [ ] → [x]
+
+# 6. Continue to next task
+```
+
+---
+
+## Task List Maintenance
+
+### Update Task List File
+
+**After each task:**
+- Mark completed tasks `[x]`
+- Add newly discovered tasks
+- Update task descriptions if requirements changed
+- Remove tasks that are no longer needed
+
+**Keep track of files:**
+```markdown
+## Relevant Files
+
+- `src/components/LoginForm.tsx` - User login form component
+- `src/services/auth.service.ts` - Authentication service
+- `src/lib/jwt.ts` - JWT token utilities
+- `tests/auth.test.ts` - Authentication tests
+```
+
+### Adding New Tasks
+
+**When you discover new work:**
+
+```markdown
+- [ ] User Authentication
+  - [x] Create login form
+  - [x] Implement JWT validation
+  - [ ] Add password reset  ← Newly discovered
+  - [ ] Implement 2FA        ← Newly discovered
+  - [ ] Write integration tests
+```
+
+**Document why:**
+```markdown
+- [ ] Add password reset
+  <!-- Added after user feedback requesting password recovery -->
+```
+
+---
+
+## Quality Standards
+
+### Before Marking Complete
+
+Each task should meet these criteria:
+
+- [ ] Code is written and works as expected
+- [ ] Tests are added/updated
+- [ ] All tests pass (`npm test`)
+- [ ] No linting errors (`npm run lint`)
+- [ ] Code is committed with descriptive message
+- [ ] Task list is updated
+
+### Exception Handling
+
+**If you can't complete a task:**
+
+1. **Document the blocker:**
+   ```markdown
+   - [ ] Implement payment integration
+     <!-- BLOCKED: Waiting for Stripe API keys from team -->
+   ```
+
+2. **Create follow-up tasks:**
+   ```markdown
+   - [ ] Implement payment integration
+   - [ ] TODO: Get Stripe API keys from team
+   - [ ] TODO: Configure Stripe webhooks
+   ```
+
+3. **Move to next unblocked task**
+
+---
+
+## AI Agent Instructions
+
+### Task Management Protocol
+
+1. **Check task list** - Identify next uncompleted task
+2. **Understand context** - Read task description and dependencies
+3. **Plan approach** - Outline implementation strategy
+4. **Implement** - Write code and tests
+5. **Verify** - Run tests and checks
+6. **Update** - Mark task complete and update files
+7. **Continue or ask** - Proceed to next task or request guidance
+
+### Code Organization
+
+- **Follow project structure** - See `.devenv/rules/code-structure.mdc`
+- **Adhere to standards** - See `.devenv/rules/contribution-standards.mdc`
+- **Write secure code** - See `.devenv/rules/security-standards.mdc`
+- **Test thoroughly** - See `.devenv/rules/testing-guide.mdc`
+
+### When Uncertain
+
+**Ask the user if:**
+- Task requirements are unclear
+- Multiple valid implementation approaches exist
+- Breaking changes might be needed
+- You encounter unexpected technical challenges
+- Dependencies or architecture need discussion
+
+**Provide context:**
+- Explain what you understand
+- Present options with trade-offs
+- Recommend an approach with reasoning
+- Wait for user decision
+
+---
+
+## Task List Format
+
+### Recommended Structure
+
+```markdown
+# Project Tasks
+
+## Phase 1: Foundation (Week 1-2)
+
+### Backend Setup
+- [x] Install dependencies
+- [x] Configure database
+- [ ] Generate schema with Apso
+  - [x] Create .apsorc file
+  - [ ] Run scaffold command
+  - [ ] Verify entities generated
+
+### Frontend Setup
+- [ ] Initialize Next.js project
+- [ ] Install UI dependencies
+- [ ] Configure Tailwind CSS
+
+## Phase 2: Core Features (Week 3-4)
+
+### User Authentication
+- [ ] Create login page
+- [ ] Implement JWT auth
+- [ ] Add protected routes
+
+---
+
+## Relevant Files
+
+- `server/.apsorc` - Database schema definition
+- `server/src/autogen/User/User.entity.ts` - User entity (generated)
+- `client/src/app/login/page.tsx` - Login page
+
+---
+
+## Notes
+
+- Using Apso CLI for backend generation
+- Following conventional commits
+- Running tests before each commit
+```
+
+---
+
+## Related Documentation
+
+- **Code Structure:** `.devenv/rules/code-structure.mdc`
+- **Testing:** `.devenv/rules/testing-guide.mdc`
+- **Security:** `.devenv/rules/security-standards.mdc`
+- **Development:** `.devenv/rules/local-development.mdc`
+
+---
+
+**Version:** 2.0
+**Last Updated:** 2025-01-11
+**Status:** Production-ready, practical task management

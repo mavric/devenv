@@ -1,0 +1,763 @@
+---
+description: Local development setup and workflow guide
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Rule: Local Development Setup
+
+This guide provides step-by-step instructions for setting up your local development environment and daily workflow.
+
+---
+
+## Prerequisites
+
+### Required Software
+
+**Node.js & npm:**
+```bash
+# Check versions
+node --version    # Should be 18.x or higher
+npm --version     # Should be 9.x or higher
+
+# Install if needed (using nvm recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 18
+nvm use 18
+```
+
+**Docker Desktop:**
+- Download from https://www.docker.com/products/docker-desktop
+- Required for running PostgreSQL locally
+- Verify: `docker --version`
+
+**Git:**
+```bash
+git --version     # Should be 2.x or higher
+```
+
+**Optional but Recommended:**
+- **VS Code** with extensions:
+  - ESLint
+  - Prettier
+  - TypeScript and JavaScript Language Features
+  - Tailwind CSS IntelliSense
+  - Docker
+
+---
+
+## First-Time Setup
+
+### 1. Clone Repository
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd lightbulb
+
+# Verify structure
+ls -la
+# Should see: client/, server/, shared/, docs/, .devenv/
+```
+
+### 2. Install Dependencies
+
+```bash
+# Install all workspace dependencies from root
+npm install
+
+# This installs dependencies for:
+# - client/
+# - server/
+# - shared/
+```
+
+### 3. Environment Configuration
+
+#### Client Environment (`client/.env.local`)
+
+```bash
+# Navigate to client directory
+cd client
+
+# Create environment file
+cat > .env.local << EOF
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Auth Configuration (if using Better Auth)
+BETTER_AUTH_SECRET=your-local-secret-min-32-chars
+BETTER_AUTH_URL=http://localhost:3000
+
+# Optional: OAuth (if needed)
+# GOOGLE_CLIENT_ID=your-google-client-id
+# GOOGLE_CLIENT_SECRET=your-google-client-secret
+EOF
+```
+
+#### Server Environment (`server/.env`)
+
+```bash
+# Navigate to server directory
+cd ../server
+
+# Create environment file
+cat > .env << EOF
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/lightbulb_dev
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=user
+DB_PASSWORD=password
+DB_DATABASE=lightbulb_dev
+
+# Application
+NODE_ENV=development
+PORT=3001
+
+# Auth (if using JWT)
+JWT_SECRET=your-local-jwt-secret-min-32-chars
+
+# Optional: Auto-sync database schema (dev only)
+DATABASE_SYNC=true
+
+# Optional: Logging
+LOG_LEVEL=debug
+EOF
+```
+
+### 4. Database Setup
+
+#### Option A: Using Docker Compose (Recommended)
+
+```bash
+# If server has docker-compose.yml
+cd server
+docker compose up -d
+
+# Verify PostgreSQL is running
+docker ps
+# Should show postgres container running on port 5432
+```
+
+#### Option B: Manual Docker Container
+
+```bash
+# Start PostgreSQL container
+docker run --name lightbulb-db \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_USER=user \
+  -e POSTGRES_DB=lightbulb_dev \
+  -p 5432:5432 \
+  -d postgres:16-alpine
+
+# Verify it's running
+docker ps
+
+# View logs if needed
+docker logs lightbulb-db
+```
+
+### 5. Generate Backend with Apso (If Needed)
+
+If the `server/` directory doesn't exist or needs regeneration:
+
+```bash
+# Install Apso CLI globally
+npm install -g @apso/apso-cli
+
+# Create new backend project
+apso server new --name lightbulb-backend
+
+# Copy schema configuration
+cd lightbulb-backend
+cp ../docs/development/schema.json .apsorc
+
+# Generate NestJS code
+apso server scaffold
+
+# Install dependencies
+npm install
+
+# Build to verify
+npm run build
+```
+
+### 6. Provision Database Schema
+
+```bash
+# Run migrations/provision
+cd server
+npm run provision
+
+# Or if using TypeORM directly
+npm run migration:run
+```
+
+### 7. Verify Setup
+
+```bash
+# From project root, start both services
+npm run dev:all
+
+# Or start separately:
+# Terminal 1 - Frontend
+npm run dev:client
+
+# Terminal 2 - Backend
+npm run dev:server
+```
+
+**Verify endpoints:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+- Backend Swagger: http://localhost:3001/api/docs (if enabled)
+
+---
+
+## Daily Development Workflow
+
+### Starting Development
+
+```bash
+# Option 1: Start both client and server together (recommended)
+npm run dev:all
+
+# Option 2: Start separately in different terminals
+# Terminal 1
+npm run dev:client
+
+# Terminal 2
+npm run dev:server
+```
+
+### Stopping Development
+
+```bash
+# Press Ctrl+C in terminal to stop servers
+
+# Stop database container (if you want to shut it down)
+docker stop lightbulb-db
+
+# Restart database when needed
+docker start lightbulb-db
+```
+
+### Making Changes
+
+**Frontend Changes (client/):**
+1. Edit files in `client/src/`
+2. Hot reload automatically updates browser
+3. Check browser console for errors
+4. Run tests: `npm run test:client`
+
+**Backend Changes (server/):**
+1. Edit files in `server/src/`
+2. Server auto-restarts on changes (nodemon/nest start --watch)
+3. Check terminal for errors
+4. Test API via Swagger or Postman
+5. Run tests: `npm run test:server`
+
+**Shared Types (shared/):**
+1. Edit types in `shared/types/`
+2. Both client and server will pick up changes
+3. May need to restart TypeScript server in VS Code
+
+### Testing Your Changes
+
+```bash
+# Run all tests
+npm test
+
+# Run specific workspace tests
+npm run test:client
+npm run test:server
+
+# Run tests in watch mode
+npm run test:client -- --watch
+
+# Run with coverage
+npm run test:cov
+```
+
+### Committing Changes
+
+```bash
+# Check what changed
+git status
+
+# Stage changes
+git add .
+
+# Commit with conventional format
+git commit -m "feat: add user profile page
+
+- Create profile page component
+- Add profile edit form
+- Integrate with user API
+
+Closes #42"
+
+# Push to remote
+git push
+```
+
+---
+
+## Debugging
+
+### Frontend Debugging (Next.js/React)
+
+#### Browser DevTools
+
+```bash
+# Start development server
+npm run dev:client
+
+# Open http://localhost:3000
+# Open browser DevTools (F12 or Right-click → Inspect)
+# - Console tab: View logs and errors
+# - Network tab: Debug API calls
+# - React DevTools: Inspect component tree
+```
+
+#### VS Code Debugger
+
+Create `.vscode/launch.json`:
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js: debug client",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:client"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "started server on .+, url: (https?://.+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    }
+  ]
+}
+```
+
+**Usage:**
+1. Set breakpoints in your code
+2. Press F5 or click "Run and Debug"
+3. Browser opens automatically with debugger attached
+
+#### React DevTools Extension
+
+Install browser extension:
+- Chrome: https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi
+- Firefox: https://addons.mozilla.org/en-US/firefox/addon/react-devtools/
+
+### Backend Debugging (NestJS)
+
+#### Debug Mode
+
+```bash
+# Start server in debug mode
+cd server
+npm run start:debug
+
+# Server starts with debugger on port 9229
+# You'll see: Debugger listening on ws://127.0.0.1:9229/...
+```
+
+#### VS Code Debugger
+
+Add to `.vscode/launch.json`:
+```json
+{
+  "name": "Attach to NestJS",
+  "type": "node",
+  "request": "attach",
+  "port": 9229,
+  "restart": true,
+  "stopOnEntry": false,
+  "protocol": "inspector"
+}
+```
+
+**Usage:**
+1. Start server in debug mode: `npm run start:debug`
+2. Set breakpoints in `server/src/`
+3. In VS Code, select "Attach to NestJS" and press F5
+4. Make API request to trigger breakpoint
+
+#### Logging
+
+```typescript
+// Use NestJS Logger
+import { Logger } from '@nestjs/common';
+
+export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
+  async findUser(id: string) {
+    this.logger.log(`Finding user with id: ${id}`);
+
+    try {
+      const user = await this.userRepo.findOne({ where: { id } });
+      this.logger.debug(`User found: ${JSON.stringify(user)}`);
+      return user;
+    } catch (error) {
+      this.logger.error(`Error finding user: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+}
+```
+
+### Database Debugging
+
+#### Connect to PostgreSQL
+
+```bash
+# Using Docker exec
+docker exec -it lightbulb-db psql -U user -d lightbulb_dev
+
+# Or using psql directly (if installed)
+psql -h localhost -U user -d lightbulb_dev
+```
+
+#### Useful PostgreSQL Commands
+
+```sql
+-- List all tables
+\dt
+
+-- Describe table structure
+\d users
+
+-- View data
+SELECT * FROM users LIMIT 10;
+
+-- Check running queries
+SELECT * FROM pg_stat_activity;
+
+-- View table sizes
+SELECT
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+```
+
+#### View Database Logs
+
+```bash
+# View PostgreSQL logs
+docker logs lightbulb-db
+
+# Follow logs in real-time
+docker logs -f lightbulb-db
+```
+
+---
+
+## Common Issues & Solutions
+
+### Port Already in Use
+
+**Problem:** `Error: listen EADDRINUSE: address already in use :::3000`
+
+**Solution:**
+```bash
+# Find process using port 3000
+lsof -ti:3000
+
+# Kill the process
+lsof -ti:3000 | xargs kill -9
+
+# Or for port 3001 (backend)
+lsof -ti:3001 | xargs kill -9
+```
+
+### Database Connection Failed
+
+**Problem:** `Error: connect ECONNREFUSED 127.0.0.1:5432`
+
+**Solutions:**
+
+**Check if PostgreSQL container is running:**
+```bash
+docker ps
+```
+
+**If not running, start it:**
+```bash
+docker start lightbulb-db
+```
+
+**If container doesn't exist, create it:**
+```bash
+docker run --name lightbulb-db \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_USER=user \
+  -e POSTGRES_DB=lightbulb_dev \
+  -p 5432:5432 \
+  -d postgres:16-alpine
+```
+
+**Check logs:**
+```bash
+docker logs lightbulb-db
+```
+
+### Module Not Found
+
+**Problem:** `Error: Cannot find module '@/components/Button'`
+
+**Solutions:**
+
+**Reinstall dependencies:**
+```bash
+# Remove node_modules and package-lock
+rm -rf node_modules package-lock.json
+rm -rf client/node_modules client/package-lock.json
+rm -rf server/node_modules server/package-lock.json
+
+# Reinstall
+npm install
+```
+
+**Check import paths:**
+```typescript
+// If using path aliases, verify tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+
+### Apso Generation Fails
+
+**Problem:** `Error: Failed to generate code from .apsorc`
+
+**Solutions:**
+
+**Clean and regenerate:**
+```bash
+cd server
+rm -rf src/autogen/*
+npx apso server scaffold
+```
+
+**Check .apsorc syntax:**
+```bash
+# Validate JSON
+cat .apsorc | python -m json.tool
+```
+
+**Check Apso CLI version:**
+```bash
+npm list -g @apso/apso-cli
+
+# Update if needed
+npm install -g @apso/apso-cli@latest
+```
+
+### Build Fails
+
+**Problem:** `Error: TypeScript compilation failed`
+
+**Solutions:**
+
+**Check for TypeScript errors:**
+```bash
+npm run typecheck
+```
+
+**Common fixes:**
+```typescript
+// Fix: Implicit 'any' type
+// Before
+function processData(data) { ... }
+
+// After
+function processData(data: UserData): void { ... }
+
+// Fix: Null/undefined check
+// Before
+const name = user.name.toUpperCase();
+
+// After
+const name = user?.name?.toUpperCase() ?? 'Unknown';
+```
+
+### Hot Reload Not Working
+
+**Problem:** Changes not reflecting in browser
+
+**Solutions:**
+
+**For Next.js (client):**
+```bash
+# Clear Next.js cache
+rm -rf client/.next
+
+# Restart dev server
+npm run dev:client
+```
+
+**For NestJS (server):**
+```bash
+# Ensure you're using watch mode
+npm run start:dev  # Uses --watch flag
+```
+
+**Check file watcher limits (Linux/Mac):**
+```bash
+# Increase file watcher limit
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+### Environment Variables Not Loading
+
+**Problem:** `process.env.API_URL is undefined`
+
+**Solutions:**
+
+**Check file exists:**
+```bash
+# Client
+ls -la client/.env.local
+
+# Server
+ls -la server/.env
+```
+
+**Verify variable names:**
+```bash
+# Client (Next.js) - must have NEXT_PUBLIC_ prefix for client-side
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Server - no prefix needed
+DATABASE_URL=postgresql://...
+```
+
+**Restart dev servers:**
+```bash
+# Environment variables are loaded on startup
+# Must restart after .env changes
+npm run dev:all
+```
+
+---
+
+## Performance Tips
+
+### Faster Installs
+
+```bash
+# Use npm ci instead of npm install (faster, reproducible)
+npm ci
+
+# Or use pnpm (faster alternative to npm)
+npm install -g pnpm
+pnpm install
+```
+
+### Faster Builds
+
+```bash
+# Enable SWC minification (Next.js)
+# next.config.js
+module.exports = {
+  swcMinify: true,
+}
+
+# Use turbo for faster builds (if using Turborepo)
+npm install turbo -g
+turbo run build
+```
+
+### Better DX
+
+**Install recommended VS Code extensions:**
+```bash
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension ms-vscode.vscode-typescript-next
+```
+
+**Configure auto-format on save:**
+```json
+// .vscode/settings.json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}
+```
+
+---
+
+## Next Steps
+
+Once your environment is set up:
+
+1. **Read the documentation:**
+   - Architecture: `/README.md`
+   - Development roadmap: `/docs/development/roadmap.md`
+   - Task list: `/docs/development/tasks.md`
+
+2. **Make your first change:**
+   - Find a small task or bug
+   - Create a feature branch
+   - Make the change
+   - Write tests
+   - Submit a pull request
+
+3. **Learn the tech stack:**
+   - Next.js: https://nextjs.org/docs
+   - NestJS: https://docs.nestjs.com
+   - TypeORM: https://typeorm.io
+   - Apso CLI: Check `.devenv/apso/` documentation
+
+4. **Get familiar with the codebase:**
+   - Explore the file structure
+   - Read existing code
+   - Run tests to understand behavior
+   - Ask questions in team chat
+
+---
+
+## Getting Help
+
+**Documentation:**
+- Project docs: `/docs/`
+- Development methodology: `/.devenv/`
+- API documentation: http://localhost:3001/api/docs
+
+**Team Resources:**
+- Team chat/Slack
+- Code review feedback
+- Pair programming sessions
+
+**External Resources:**
+- Next.js docs: https://nextjs.org/docs
+- NestJS docs: https://docs.nestjs.com
+- Apso CLI: https://www.npmjs.com/package/@apso/apso-cli
+
+---
+
+**Version:** 1.0
+**Last Updated:** 2025-01-11
+**Status:** Production-ready setup guide

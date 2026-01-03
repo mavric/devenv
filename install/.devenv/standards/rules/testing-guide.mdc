@@ -1,0 +1,997 @@
+---
+description: Testing standards and practical examples for all layers
+globs:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+alwaysApply: true
+---
+
+# Rule: Testing Guide
+
+This guide provides concrete testing patterns, examples, and standards for writing effective tests across your application.
+
+---
+
+## Testing Philosophy
+
+**Core Principles:**
+- 🎯 **Test behavior, not implementation** - Tests should verify what code does, not how it does it
+- 🏗️ **Follow the Test Pyramid** - Many unit tests, fewer integration tests, minimal E2E tests
+- 🔄 **Tests should be deterministic** - Same input always produces same output (no flakiness)
+- ⚡ **Fast feedback is essential** - Tests should run quickly to enable rapid iteration
+- 🔒 **Tests are isolated** - Each test is independent and can run in any order
+- 📝 **Use descriptive test names** - Test names should explain what is being tested
+
+**Test Pyramid:**
+```
+        /\
+       /  \    E2E Tests (5-10%)
+      /____\   - Critical user journeys
+     /      \  - Full stack integration
+    /________\
+   /          \ Integration Tests (20-30%)
+  /____________\ - API endpoints
+ /              \ - Database operations
+/________________\ Unit Tests (60-75%)
+                   - Functions, components
+                   - Business logic
+```
+
+---
+
+## Unit Testing
+
+Unit tests verify individual functions, components, or classes in isolation.
+
+### Frontend Unit Testing (React/Next.js)
+
+**Framework:** Jest + React Testing Library
+
+#### Test File Organization
+
+```
+src/
+├── components/
+│   └── Button/
+│       ├── Button.tsx
+│       └── Button.test.tsx        # Co-located with component
+├── lib/
+│   └── utils.ts
+│       └── utils.test.ts           # Co-located with utilities
+└── app/
+    └── login/
+        └── page.test.tsx           # Test Next.js pages
+```
+
+#### Basic Component Test
+
+```typescript
+// src/components/Button/Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  describe('Rendering', () => {
+    it('should render with text when provided as children', () => {
+      render(<Button>Click Me</Button>);
+
+      expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
+    });
+
+    it('should apply variant styles when variant prop is provided', () => {
+      render(<Button variant="destructive">Delete</Button>);
+
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('bg-destructive');
+    });
+
+    it('should show loading state when isLoading is true', () => {
+      render(<Button isLoading>Submit</Button>);
+
+      expect(screen.getByRole('button')).toBeDisabled();
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+    });
+  });
+
+  describe('Interactions', () => {
+    it('should call onClick handler when clicked', () => {
+      const handleClick = jest.fn();
+      render(<Button onClick={handleClick}>Click</Button>);
+
+      fireEvent.click(screen.getByRole('button'));
+
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onClick when disabled', () => {
+      const handleClick = jest.fn();
+      render(<Button onClick={handleClick} disabled>Click</Button>);
+
+      fireEvent.click(screen.getByRole('button'));
+
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have correct ARIA attributes when disabled', () => {
+      render(<Button disabled>Submit</Button>);
+
+      const button = screen.getByRole('button');
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+    });
+  });
+});
+```
+
+#### Testing Hooks
+
+```typescript
+// src/hooks/useCounter.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from './useCounter';
+
+describe('useCounter', () => {
+  it('should initialize with default value of 0', () => {
+    const { result } = renderHook(() => useCounter());
+
+    expect(result.current.count).toBe(0);
+  });
+
+  it('should initialize with provided initial value', () => {
+    const { result } = renderHook(() => useCounter(10));
+
+    expect(result.current.count).toBe(10);
+  });
+
+  it('should increment count when increment is called', () => {
+    const { result } = renderHook(() => useCounter());
+
+    act(() => {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+  });
+
+  it('should decrement count when decrement is called', () => {
+    const { result } = renderHook(() => useCounter(5));
+
+    act(() => {
+      result.current.decrement();
+    });
+
+    expect(result.current.count).toBe(4);
+  });
+
+  it('should reset to initial value when reset is called', () => {
+    const { result } = renderHook(() => useCounter(10));
+
+    act(() => {
+      result.current.increment();
+      result.current.increment();
+      result.current.reset();
+    });
+
+    expect(result.current.count).toBe(10);
+  });
+});
+```
+
+#### Testing Forms
+
+```typescript
+// src/components/LoginForm/LoginForm.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { LoginForm } from './LoginForm';
+
+describe('LoginForm', () => {
+  it('should render email and password fields', () => {
+    render(<LoginForm onSubmit={jest.fn()} />);
+
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+  });
+
+  it('should show validation errors for invalid email', async () => {
+    render(<LoginForm onSubmit={jest.fn()} />);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    await userEvent.type(emailInput, 'invalid-email');
+    await userEvent.tab(); // Trigger blur
+
+    expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
+  });
+
+  it('should show validation errors for short password', async () => {
+    render(<LoginForm onSubmit={jest.fn()} />);
+
+    const passwordInput = screen.getByLabelText(/password/i);
+    await userEvent.type(passwordInput, '123');
+    await userEvent.tab();
+
+    expect(await screen.findByText(/at least 8 characters/i)).toBeInTheDocument();
+  });
+
+  it('should call onSubmit with form data when valid', async () => {
+    const handleSubmit = jest.fn();
+    render(<LoginForm onSubmit={handleSubmit} />);
+
+    await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await userEvent.type(screen.getByLabelText(/password/i), 'password123');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(handleSubmit).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+    });
+  });
+
+  it('should disable submit button while submitting', async () => {
+    const handleSubmit = jest.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+    render(<LoginForm onSubmit={handleSubmit} />);
+
+    await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await userEvent.type(screen.getByLabelText(/password/i), 'password123');
+
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    await userEvent.click(submitButton);
+
+    expect(submitButton).toBeDisabled();
+  });
+});
+```
+
+### Backend Unit Testing (NestJS)
+
+**Framework:** Jest + NestJS Testing Module
+
+#### Testing Services
+
+```typescript
+// src/services/user.service.spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserService } from './user.service';
+import { User } from '../entities/user.entity';
+import { NotFoundException } from '@nestjs/common';
+
+describe('UserService', () => {
+  let service: UserService;
+  let repository: jest.Mocked<Repository<User>>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<UserService>(UserService);
+    repository = module.get(getRepositoryToken(User));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('findById', () => {
+    it('should return user when found', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        name: 'Test User',
+      } as User;
+
+      repository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.findById('1');
+
+      expect(result).toEqual(mockUser);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+    });
+
+    it('should throw NotFoundException when user not found', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      await expect(service.findById('999')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('999')).rejects.toThrow('User not found');
+    });
+  });
+
+  describe('create', () => {
+    it('should create and return new user', async () => {
+      const createUserDto = {
+        email: 'new@example.com',
+        name: 'New User',
+        password: 'hashedPassword123',
+      };
+
+      const mockUser = {
+        id: '2',
+        ...createUserDto,
+        createdAt: new Date(),
+      } as User;
+
+      repository.create.mockReturnValue(mockUser);
+      repository.save.mockResolvedValue(mockUser);
+
+      const result = await service.create(createUserDto);
+
+      expect(repository.create).toHaveBeenCalledWith(createUserDto);
+      expect(repository.save).toHaveBeenCalledWith(mockUser);
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should hash password before saving', async () => {
+      const createUserDto = {
+        email: 'new@example.com',
+        name: 'New User',
+        password: 'plainPassword',
+      };
+
+      repository.create.mockReturnValue({} as User);
+      repository.save.mockImplementation(async (user) => user);
+
+      await service.create(createUserDto);
+
+      const savedUser = repository.save.mock.calls[0][0];
+      expect(savedUser.password).not.toBe('plainPassword');
+      expect(savedUser.password.length).toBeGreaterThan(20); // Hashed
+    });
+  });
+
+  describe('update', () => {
+    it('should update and return user', async () => {
+      const existingUser = {
+        id: '1',
+        email: 'old@example.com',
+        name: 'Old Name',
+      } as User;
+
+      const updateDto = { name: 'New Name' };
+
+      repository.findOne.mockResolvedValue(existingUser);
+      repository.save.mockResolvedValue({
+        ...existingUser,
+        ...updateDto,
+      } as User);
+
+      const result = await service.update('1', updateDto);
+
+      expect(result.name).toBe('New Name');
+      expect(repository.save).toHaveBeenCalled();
+    });
+  });
+});
+```
+
+#### Testing Controllers
+
+```typescript
+// src/controllers/user.controller.spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { UserController } from './user.controller';
+import { UserService } from '../services/user.service';
+import { CreateUserDto } from '../dto/create-user.dto';
+
+describe('UserController', () => {
+  let controller: UserController;
+  let service: jest.Mocked<UserService>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [UserController],
+      providers: [
+        {
+          provide: UserService,
+          useValue: {
+            findAll: jest.fn(),
+            findById: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<UserController>(UserController);
+    service = module.get(UserService);
+  });
+
+  describe('findAll', () => {
+    it('should return array of users', async () => {
+      const mockUsers = [
+        { id: '1', email: 'user1@example.com' },
+        { id: '2', email: 'user2@example.com' },
+      ];
+
+      service.findAll.mockResolvedValue(mockUsers as any);
+
+      const result = await controller.findAll();
+
+      expect(result).toEqual(mockUsers);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('create', () => {
+    it('should create and return user', async () => {
+      const createDto: CreateUserDto = {
+        email: 'new@example.com',
+        name: 'New User',
+        password: 'password123',
+      };
+
+      const mockUser = { id: '3', ...createDto };
+      service.create.mockResolvedValue(mockUser as any);
+
+      const result = await controller.create(createDto);
+
+      expect(result).toEqual(mockUser);
+      expect(service.create).toHaveBeenCalledWith(createDto);
+    });
+  });
+});
+```
+
+#### Testing Utilities
+
+```typescript
+// src/lib/utils.test.ts
+import { formatCurrency, calculatePercentage, slugify } from './utils';
+
+describe('Utils', () => {
+  describe('formatCurrency', () => {
+    it('should format USD correctly', () => {
+      expect(formatCurrency(1234.56, 'USD')).toBe('$1,234.56');
+    });
+
+    it('should handle zero', () => {
+      expect(formatCurrency(0, 'USD')).toBe('$0.00');
+    });
+
+    it('should handle negative numbers', () => {
+      expect(formatCurrency(-50.5, 'USD')).toBe('-$50.50');
+    });
+  });
+
+  describe('calculatePercentage', () => {
+    it('should calculate percentage correctly', () => {
+      expect(calculatePercentage(25, 100)).toBe(25);
+      expect(calculatePercentage(50, 200)).toBe(25);
+    });
+
+    it('should return 0 when total is 0', () => {
+      expect(calculatePercentage(10, 0)).toBe(0);
+    });
+
+    it('should round to 2 decimal places', () => {
+      expect(calculatePercentage(1, 3)).toBe(33.33);
+    });
+  });
+
+  describe('slugify', () => {
+    it('should convert string to lowercase slug', () => {
+      expect(slugify('Hello World')).toBe('hello-world');
+    });
+
+    it('should remove special characters', () => {
+      expect(slugify('Hello@World!')).toBe('hello-world');
+    });
+
+    it('should handle multiple spaces', () => {
+      expect(slugify('Hello    World')).toBe('hello-world');
+    });
+
+    it('should trim leading and trailing spaces', () => {
+      expect(slugify('  Hello World  ')).toBe('hello-world');
+    });
+  });
+});
+```
+
+---
+
+## Integration Testing
+
+Integration tests verify that multiple components work together correctly.
+
+### API Integration Testing (NestJS)
+
+**Framework:** Jest + Supertest
+
+#### Setup Test Database
+
+```typescript
+// test/setup/database.ts
+import { DataSource } from 'typeorm';
+
+export async function setupTestDatabase() {
+  const dataSource = new DataSource({
+    type: 'postgres',
+    host: 'localhost',
+    port: 5433, // Different port for test DB
+    username: 'test_user',
+    password: 'test_password',
+    database: 'test_db',
+    entities: ['src/**/*.entity.ts'],
+    synchronize: true, // Auto-create schema (test only!)
+  });
+
+  await dataSource.initialize();
+  return dataSource;
+}
+
+export async function cleanDatabase(dataSource: DataSource) {
+  const entities = dataSource.entityMetadatas;
+
+  for (const entity of entities) {
+    const repository = dataSource.getRepository(entity.name);
+    await repository.clear();
+  }
+}
+```
+
+#### API Endpoint Tests
+
+```typescript
+// test/user.e2e-spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+import { DataSource } from 'typeorm';
+import { setupTestDatabase, cleanDatabase } from './setup/database';
+
+describe('User API (e2e)', () => {
+  let app: INestApplication;
+  let dataSource: DataSource;
+
+  beforeAll(async () => {
+    dataSource = await setupTestDatabase();
+
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(dataSource)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+    await dataSource.destroy();
+  });
+
+  afterEach(async () => {
+    await cleanDatabase(dataSource);
+  });
+
+  describe('POST /users', () => {
+    it('should create a new user with valid data', () => {
+      return request(app.getHttpServer())
+        .post('/users')
+        .send({
+          email: 'test@example.com',
+          name: 'Test User',
+          password: 'Password123!',
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('id');
+          expect(res.body.email).toBe('test@example.com');
+          expect(res.body).not.toHaveProperty('password'); // Should be excluded
+        });
+    });
+
+    it('should return 400 for invalid email', () => {
+      return request(app.getHttpServer())
+        .post('/users')
+        .send({
+          email: 'invalid-email',
+          name: 'Test User',
+          password: 'Password123!',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain('email');
+        });
+    });
+
+    it('should return 409 for duplicate email', async () => {
+      // Create first user
+      await request(app.getHttpServer())
+        .post('/users')
+        .send({
+          email: 'duplicate@example.com',
+          name: 'First User',
+          password: 'Password123!',
+        });
+
+      // Attempt to create duplicate
+      return request(app.getHttpServer())
+        .post('/users')
+        .send({
+          email: 'duplicate@example.com',
+          name: 'Second User',
+          password: 'Password123!',
+        })
+        .expect(409)
+        .expect((res) => {
+          expect(res.body.message).toContain('already exists');
+        });
+    });
+  });
+
+  describe('GET /users/:id', () => {
+    it('should return user by id', async () => {
+      // Create user
+      const createResponse = await request(app.getHttpServer())
+        .post('/users')
+        .send({
+          email: 'test@example.com',
+          name: 'Test User',
+          password: 'Password123!',
+        });
+
+      const userId = createResponse.body.id;
+
+      // Get user
+      return request(app.getHttpServer())
+        .get(`/users/${userId}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.id).toBe(userId);
+          expect(res.body.email).toBe('test@example.com');
+        });
+    });
+
+    it('should return 404 for non-existent user', () => {
+      return request(app.getHttpServer())
+        .get('/users/00000000-0000-0000-0000-000000000000')
+        .expect(404);
+    });
+  });
+
+  describe('Authentication Required', () => {
+    it('should return 401 for protected endpoint without token', () => {
+      return request(app.getHttpServer())
+        .get('/users/me')
+        .expect(401);
+    });
+
+    it('should allow access with valid token', async () => {
+      // Login to get token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'existing@example.com',
+          password: 'Password123!',
+        });
+
+      const token = loginResponse.body.accessToken;
+
+      // Access protected endpoint
+      return request(app.getHttpServer())
+        .get('/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+    });
+  });
+});
+```
+
+---
+
+## End-to-End (E2E) Testing
+
+E2E tests verify complete user workflows across the entire application.
+
+### Framework: Playwright
+
+#### Setup
+
+```typescript
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+#### E2E Test Examples
+
+```typescript
+// e2e/user-registration.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('User Registration Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/register');
+  });
+
+  test('should complete registration with valid data', async ({ page }) => {
+    // Fill form
+    await page.getByLabel('Email').fill('newuser@example.com');
+    await page.getByLabel('Name').fill('New User');
+    await page.getByLabel('Password').fill('SecurePass123!');
+    await page.getByLabel('Confirm Password').fill('SecurePass123!');
+
+    // Submit
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    // Verify redirect to dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByText(/welcome/i)).toBeVisible();
+  });
+
+  test('should show validation errors for invalid data', async ({ page }) => {
+    await page.getByLabel('Email').fill('invalid-email');
+    await page.getByLabel('Password').fill('short');
+
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page.getByText(/invalid email/i)).toBeVisible();
+    await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
+  });
+
+  test('should handle existing email error', async ({ page }) => {
+    await page.getByLabel('Email').fill('existing@example.com');
+    await page.getByLabel('Name').fill('Test User');
+    await page.getByLabel('Password').fill('SecurePass123!');
+    await page.getByLabel('Confirm Password').fill('SecurePass123!');
+
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page.getByText(/email already exists/i)).toBeVisible();
+  });
+});
+
+// e2e/user-login.spec.ts
+test.describe('User Login Flow', () => {
+  test('should login successfully with valid credentials', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByLabel('Email').fill('test@example.com');
+    await page.getByLabel('Password').fill('Password123!');
+    await page.getByRole('button', { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByText(/test@example.com/i)).toBeVisible();
+  });
+
+  test('should show error for invalid credentials', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByLabel('Email').fill('test@example.com');
+    await page.getByLabel('Password').fill('WrongPassword');
+    await page.getByRole('button', { name: /sign in/i }).click();
+
+    await expect(page.getByText(/invalid credentials/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+  });
+});
+```
+
+---
+
+## Test Data Management
+
+### Factory Pattern
+
+```typescript
+// test/factories/user.factory.ts
+import { faker } from '@faker-js/faker';
+
+export const createMockUser = (overrides = {}) => ({
+  id: faker.string.uuid(),
+  email: faker.internet.email(),
+  name: faker.person.fullName(),
+  createdAt: faker.date.recent(),
+  workspaceId: faker.string.uuid(),
+  ...overrides,
+});
+
+export const createMockWorkspace = (overrides = {}) => ({
+  id: faker.string.uuid(),
+  name: faker.company.name(),
+  slug: faker.lorem.slug(),
+  createdAt: faker.date.recent(),
+  ...overrides,
+});
+
+// Usage in tests
+it('should process user correctly', () => {
+  const user = createMockUser({
+    email: 'specific@example.com',
+    name: 'Specific Name',
+  });
+
+  const result = processUser(user);
+
+  expect(result.email).toBe('specific@example.com');
+});
+```
+
+---
+
+## Coverage Requirements
+
+### Minimum Thresholds
+
+```json
+// jest.config.js
+{
+  "coverageThreshold": {
+    "global": {
+      "statements": 80,
+      "branches": 75,
+      "functions": 80,
+      "lines": 80
+    },
+    "./src/lib/": {
+      "statements": 90,
+      "branches": 85,
+      "functions": 90,
+      "lines": 90
+    }
+  }
+}
+```
+
+### Run Coverage Report
+
+```bash
+# Generate coverage report
+npm run test:cov
+
+# View HTML report
+open coverage/lcov-report/index.html
+```
+
+---
+
+## Running Tests
+
+### Commands
+
+```bash
+# Run all tests
+npm test
+
+# Run specific workspace
+npm run test:client
+npm run test:server
+
+# Watch mode (re-run on file changes)
+npm test -- --watch
+
+# Run specific test file
+npm test -- user.service.spec.ts
+
+# Run tests matching pattern
+npm test -- --testNamePattern="should create user"
+
+# Generate coverage
+npm run test:cov
+
+# Run E2E tests
+npx playwright test
+
+# Run E2E in UI mode (interactive)
+npx playwright test --ui
+
+# Run E2E on specific browser
+npx playwright test --project=chromium
+```
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [pull_request, push]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm test -- --coverage
+      - uses: codecov/codecov-action@v3
+```
+
+---
+
+## Best Practices Checklist
+
+### Before Writing Tests
+
+- [ ] Understand what you're testing (behavior, not implementation)
+- [ ] Choose the right test type (unit/integration/E2E)
+- [ ] Consider edge cases and error scenarios
+
+### Writing Tests
+
+- [ ] Use descriptive test names
+- [ ] Follow Arrange-Act-Assert pattern
+- [ ] One assertion per test (when possible)
+- [ ] Tests are independent and isolated
+- [ ] No hardcoded values (use factories)
+- [ ] Mock external dependencies
+- [ ] Test both happy path and error cases
+
+### After Writing Tests
+
+- [ ] All tests pass locally
+- [ ] Coverage thresholds met
+- [ ] No flaky tests (run multiple times)
+- [ ] Tests are fast (< 5s for unit, < 30s for integration)
+- [ ] Code review includes test review
+
+---
+
+**Version:** 1.0
+**Last Updated:** 2025-01-11
+**Status:** Production-ready testing guide

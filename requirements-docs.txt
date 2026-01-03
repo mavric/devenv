@@ -1,0 +1,11 @@
+# MkDocs and Material theme
+mkdocs>=1.5.0
+mkdocs-material>=9.5.0
+
+# Required extensions
+pymdown-extensions>=10.0
+pygments>=2.16.0
+
+# Optional plugins (uncomment if needed)
+# mkdocs-minify-plugin>=0.7.0
+# mkdocs-git-revision-date-localized-plugin>=1.2.0

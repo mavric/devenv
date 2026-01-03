@@ -1,0 +1,288 @@
+---
+alwaysApply: true
+description: Code organization principles and layer separation guidelines
+version: 2.0
+globs:
+  - "**/*"
+---
+
+# Rule: Code Structure & Directory Conventions
+
+This rule establishes principles for organizing code in modern full-stack applications using layered architecture, S.O.L.I.D. principles, and clear separation of concerns. It ensures contributors and agents place code in predictable, modular locations.
+
+---
+
+## Core Principles
+
+### 1. Separation of Concerns
+Code should be organized by functional domain and responsibility, not by file type.
+
+**Good Examples:**
+- Frontend UI components separate from backend API logic
+- Business logic separate from infrastructure configuration
+- Shared utilities separate from application-specific code
+- Generated code separate from custom code
+
+**Bad Examples:**
+- Mixing frontend and backend code in same directories
+- Combining business logic with infrastructure setup
+- Storing documentation alongside source code
+- Editing auto-generated files
+
+### 2. Layer Boundaries
+Each layer should have clear responsibilities and dependencies should flow in one direction.
+
+**Common Layers:**
+- **Presentation Layer** - UI components, pages, client-side logic
+- **Application Layer** - API endpoints, request handlers, business workflows
+- **Domain Layer** - Business logic, domain models, use cases
+- **Infrastructure Layer** - Database access, external services, file storage
+- **Shared Layer** - Common utilities, types, constants used across layers
+
+### 3. Predictable Organization
+Similar types of code should be organized consistently across the codebase.
+
+---
+
+## 🎯 Code Placement Decision Tree
+
+When adding new code, ask these questions:
+
+### Question 1: What is the primary purpose?
+
+**User Interface / Visual**
+→ Place in **frontend/UI layer** (e.g., components, pages, layouts)
+
+**API / Data Processing**
+→ Place in **backend/application layer** (e.g., controllers, services)
+
+**Business Rules / Domain Logic**
+→ Place in **domain/business layer** (e.g., domain services, validators)
+
+**External Integration**
+→ Place in **infrastructure layer** (e.g., database, APIs, file storage)
+
+**Reusable Utilities**
+→ Place in **shared/common layer** (e.g., utilities, types, constants)
+
+**Infrastructure / Deployment**
+→ Place in **infrastructure/config layer** (e.g., IaC, deployment scripts)
+
+**Documentation**
+→ Place in **docs layer** (e.g., guides, ADRs, API specs)
+
+### Question 2: Is this auto-generated code?
+
+**YES** → Place in designated generated code directory
+- Never modify generated code
+- Keep separate from custom code
+- Regeneration should overwrite safely
+
+**NO** → Place in appropriate custom code directory
+
+### Question 3: Is this shared across multiple parts of the application?
+
+**YES** → Place in shared/common layer
+- Types shared between client and server
+- Utility functions used everywhere
+- Constants and configuration
+
+**NO** → Place close to where it's used (co-location)
+
+---
+
+## 📂 Common Organizational Patterns
+
+### Pattern 1: Monorepo with Workspaces
+
+```
+project/
+├── frontend/           # UI application
+│   ├── src/
+│   │   ├── app/       # Pages/routes
+│   │   ├── components/ # UI components
+│   │   └── lib/       # Frontend utilities
+│   └── package.json
+├── backend/            # API application
+│   ├── src/
+│   │   ├── modules/   # Feature modules
+│   │   ├── common/    # Shared backend code
+│   │   └── main.ts
+│   └── package.json
+├── shared/             # Code shared between frontend/backend
+│   └── types/         # TypeScript types
+├── docs/              # Documentation
+└── package.json       # Workspace configuration
+```
+
+### Pattern 2: Feature-Based Organization
+
+```
+src/
+├── features/
+│   ├── users/
+│   │   ├── user.controller.ts
+│   │   ├── user.service.ts
+│   │   ├── user.entity.ts
+│   │   └── user.dto.ts
+│   └── products/
+│       ├── product.controller.ts
+│       ├── product.service.ts
+│       └── product.entity.ts
+├── common/            # Cross-feature shared code
+└── infrastructure/    # Technical infrastructure
+```
+
+### Pattern 3: Separation of Generated Code
+
+```
+backend/
+├── src/
+│   ├── generated/     # Auto-generated (DO NOT EDIT)
+│   │   └── entities/
+│   ├── custom/        # Custom business logic
+│   │   └── services/
+│   └── extensions/    # Extensions to generated code
+│       └── user/
+```
+
+---
+
+## 🚫 Anti-Patterns to Avoid
+
+### ❌ Mixing Layers
+```
+# Bad: Frontend and backend in same directory
+src/
+├── Button.tsx         # Frontend component
+└── user.service.ts    # Backend service
+```
+
+### ❌ Editing Generated Code
+```
+# Bad: Modifying auto-generated files
+src/generated/User.entity.ts  # DO NOT EDIT!
+```
+
+### ❌ Deep Nesting Without Purpose
+```
+# Bad: Unnecessary deep nesting
+src/app/features/user/components/profile/edit/form/inputs/email/
+```
+
+### ❌ Unclear Naming
+```
+# Bad: Non-descriptive directory names
+src/stuff/
+src/things/
+src/misc/
+```
+
+### ❌ Mixed Concerns
+```
+# Bad: Single file doing multiple things
+src/utils.ts  # Contains: date formatting, API calls, validation, encryption
+```
+
+---
+
+## ✅ Best Practices
+
+### 1. Co-locate Related Code
+Keep code close to where it's used:
+```
+components/
+└── Button/
+    ├── Button.tsx
+    ├── Button.test.tsx
+    ├── Button.stories.tsx
+    └── index.ts
+```
+
+### 2. Use Index Files for Clean Exports
+```typescript
+// components/index.ts
+export { Button } from './Button';
+export { Input } from './Input';
+export { Form } from './Form';
+
+// Usage
+import { Button, Input, Form } from '@/components';
+```
+
+### 3. Separate Configuration
+```
+config/
+├── database.config.ts
+├── auth.config.ts
+└── env.config.ts
+```
+
+### 4. Group Tests with Source
+```
+src/
+├── services/
+│   ├── user.service.ts
+│   └── user.service.test.ts
+```
+
+### 5. Use Clear Naming Conventions
+- `*.test.ts` - Unit tests
+- `*.spec.ts` - Integration tests
+- `*.e2e.ts` - End-to-end tests
+- `*.config.ts` - Configuration files
+- `*.dto.ts` - Data transfer objects
+- `*.entity.ts` - Database entities
+- `*.interface.ts` - TypeScript interfaces
+
+---
+
+## 🤖 AI Agent Instructions
+
+When generating or modifying code:
+
+1. **Inspect the existing structure first**
+   - Run `ls -la` or similar to understand current organization
+   - Look for existing patterns (feature-based, layer-based, etc.)
+   - Identify where similar code already exists
+
+2. **Follow established patterns**
+   - If frontend code is in `client/src/`, put new frontend code there
+   - If components use co-location pattern, follow it
+   - Match existing naming conventions
+
+3. **Respect layer boundaries**
+   - Don't import backend code into frontend
+   - Don't mix infrastructure code with business logic
+   - Keep shared code truly shared (no app-specific logic)
+
+4. **Never modify generated code**
+   - Identify generated code directories
+   - Use extension/override patterns instead
+   - Document custom code clearly
+
+5. **When uncertain, ask**
+   - Pause and request clarification
+   - Suggest options with trade-offs
+   - Don't guess or make up new patterns
+
+6. **Document your decisions**
+   - Add comments explaining non-obvious placement
+   - Update relevant documentation
+   - Note architectural decisions
+
+---
+
+## 📚 Related Documentation
+
+- **Layer Architecture:** See `contribution-standards.mdc` for layer-specific standards
+- **Security:** See `security-standards.mdc` for secure code organization
+- **Testing:** See `testing-guide.mdc` for test file organization
+- **Development:** See `local-development.mdc` for project setup
+
+---
+
+**Version:** 2.0
+**Last Updated:** 2025-01-11
+**Status:** Production-ready, project-agnostic guidelines
+

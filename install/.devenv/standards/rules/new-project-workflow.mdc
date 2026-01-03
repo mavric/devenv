@@ -1,0 +1,344 @@
+---
+description: Enforces discovery-first workflow when starting new SaaS projects
+globs: ["**/*"]
+alwaysApply: true
+priority: critical
+---
+
+# Rule: New Project Workflow (Discovery-First)
+
+**Critical Rule:** When a user wants to start a new SaaS project, you MUST invoke the discovery process BEFORE any planning or implementation.
+
+---
+
+## Trigger Phrases
+
+These phrases indicate the user wants to start a NEW project:
+
+✅ **MUST trigger discovery:**
+- "I want to build a new SaaS..."
+- "Help me create a [type] platform/application"
+- "I'm starting a project that..."
+- "Build me a [description] SaaS"
+- "Let's build [new product]"
+- "I need to create a product that..."
+
+❌ **Does NOT trigger discovery:**
+- "Add [feature] to existing project"
+- "Fix [bug] in..."
+- "Refactor [component]..."
+- "Update [existing feature]..."
+
+---
+
+## Required Workflow
+
+When a new project is detected:
+
+### Step 1: Invoke SaaS Project Orchestrator
+
+```
+Use the Skill tool to invoke: saas-project-orchestrator
+```
+
+**Why this skill?**
+- It orchestrates the ENTIRE SDLC from discovery → deployment
+- It ENFORCES the discovery-first approach
+- It calls specialized skills in the right sequence
+
+### Step 2: The Orchestrator Will Handle
+
+The orchestrator automatically runs:
+1. **Phase 0: Discovery** (90 min) - Comprehensive interview
+2. **Phase 1: Test Scenarios** - Gherkin from workflows
+3. **Phase 2: Schema Design** - Data model extraction
+4. **Phase 3: Product Brief** - PRD synthesis
+5. **Phase 4: Roadmap** - Phased delivery plan
+6. **Phase 5+: Implementation** - Building with validation
+
+---
+
+## What NOT To Do
+
+❌ **DO NOT:**
+- Create implementation todos immediately
+- Jump to "let's create a Next.js project"
+- Start designing schema without discovery
+- Ask tech stack questions before discovery
+- Create files or directories before discovery
+
+✅ **DO:**
+- Invoke saas-project-orchestrator skill
+- Let the orchestrator handle the sequence
+- Trust the proven methodology
+
+---
+
+## Why This Rule Exists
+
+### The Problem
+
+Without discovery:
+- ❌ Incomplete requirements lead to incomplete implementation
+- ❌ Missing edge cases discovered too late (expensive fixes)
+- ❌ Schema doesn't match actual workflows
+- ❌ Features don't solve real user problems
+- ❌ Scope creep and constant re-work
+
+### The Solution
+
+With discovery first:
+- ✅ Complete requirements before coding
+- ✅ All edge cases documented upfront
+- ✅ Schema designed from workflows
+- ✅ Clear acceptance criteria (Gherkin scenarios)
+- ✅ Reduced re-work and scope changes
+
+### The Data
+
+> "Incomplete or bad information at discovery leads to incomplete or bad implementation later."
+
+Industry research shows:
+- 60% of project failures due to poor requirements
+- Fixing requirements issues post-launch: **100x more expensive**
+- Discovery phase: **2% of project time, prevents 80% of issues**
+
+---
+
+## Example: Correct Flow
+
+**User:** "I want to build a new SaaS platform for product discovery"
+
+**Correct Response:**
+```
+Great! Since you're starting a new SaaS project, I'll invoke the
+saas-project-orchestrator skill. This will guide us through:
+
+1. Deep Discovery (90 min) - Extract complete requirements
+2. Test Scenarios - Acceptance criteria as Gherkin
+3. Schema Design - Data model from workflows
+4. Product Brief - Synthesized PRD
+5. Implementation - Building with validation
+
+Let me start the orchestrator now...
+
+[Invokes saas-project-orchestrator skill]
+```
+
+**Incorrect Response:**
+```
+❌ Let me create a todo list for implementation...
+❌ First, let's set up Next.js...
+❌ I'll create the project structure...
+❌ What tech stack do you want?
+```
+
+---
+
+## Example: When NOT To Use Discovery
+
+**User:** "Add a comments feature to my existing project"
+
+**Correct Response:**
+```
+I'll help add the comments feature. This is an enhancement to an
+existing project, so we'll use feature-builder instead of full discovery.
+
+Let me understand the requirements for the comments feature...
+[Proceeds with feature-specific questions]
+```
+
+**Why?**
+- Project already exists
+- Foundation already established
+- Scoped feature addition, not new product
+
+---
+
+## Approval Gates
+
+The orchestrator includes built-in approval gates:
+
+1. **After Discovery** - User approves discovery document (confidence 8+/10)
+2. **After Scenarios** - User confirms scenarios capture all requirements
+3. **After Schema** - User validates schema supports workflows
+4. **After Roadmap** - User confirms MVP definition
+
+You must wait for user approval at each gate before proceeding.
+
+---
+
+## Handling User Resistance
+
+If user says "Can we skip discovery?":
+
+**Response:**
+```
+I understand you want to move fast! However, skipping discovery
+typically SLOWS projects down because:
+
+- You'll discover missing requirements during implementation
+- You'll need to refactor code and database schema
+- Edge cases will surface in production (expensive fixes)
+
+The discovery phase takes 90 minutes but prevents weeks of rework.
+
+Industry data shows: Discovery is 2% of time, prevents 80% of issues.
+
+Can we invest 90 minutes now to save weeks later?
+```
+
+If user insists:
+```
+I can help you build immediately, but I strongly recommend we do
+at least a quick discovery (30-45 min focused session) covering:
+- Core workflows (what users do)
+- Data model (what we need to store)
+- Edge cases (what could go wrong)
+
+Would that work as a compromise?
+```
+
+---
+
+## Integration with Existing Rules
+
+### Priority Order
+
+1. **new-project-workflow.mdc** (this rule) - Triggers on new projects
+2. **process-task-list.mdc** - Executes tasks AFTER discovery/planning
+3. **code-structure.mdc** - Enforces structure during implementation
+4. **testing-guide.mdc** - Ensures quality during feature building
+
+### Rule Precedence
+
+- `alwaysApply: true` means this rule is ALWAYS active
+- `priority: critical` means this overrides other rules
+- When conflict exists, discovery-first wins
+
+---
+
+## Exceptions
+
+**Only skip discovery if:**
+
+1. **Proof of Concept / Throwaway Code**
+   - User explicitly states: "This is just a quick POC"
+   - Code won't go to production
+   - Learning exercise only
+
+2. **Tutorial / Educational**
+   - User is learning specific technology
+   - Following along with tutorial
+   - Not building real product
+
+3. **Existing Project Enhancement**
+   - Project already exists
+   - Foundation established
+   - Scoped feature addition
+
+**In ALL other cases: Run discovery first.**
+
+---
+
+## Slash Commands
+
+For convenience, create these slash commands:
+
+### /start-project
+**Purpose:** Invoke saas-project-orchestrator for new projects
+
+**Definition:**
+```markdown
+You want to start a new SaaS project. I'll invoke the saas-project-orchestrator
+skill to guide you through:
+
+0. Deep Discovery (90 min)
+1. Test Scenarios (Gherkin)
+2. Schema Design
+3. Product Brief
+4. Roadmap & Tasks
+5. Implementation
+
+Ready to begin? Let me invoke the orchestrator...
+```
+
+### /discovery-only
+**Purpose:** Run just discovery phase (for existing projects adding major features)
+
+**Definition:**
+```markdown
+You want to run discovery for a major new feature or product area.
+I'll invoke the discovery-interviewer skill for a 90-minute structured interview.
+
+After discovery, you can choose to:
+- Generate test scenarios
+- Design schema
+- Create product brief
+- Or stop here and implement manually
+
+Let me start the discovery interview...
+```
+
+---
+
+## Monitoring & Compliance
+
+### AI Agent Self-Check
+
+Before responding to "new project" requests, ask yourself:
+
+1. ✅ Is this a NEW SaaS project/product?
+2. ✅ Have I invoked saas-project-orchestrator?
+3. ✅ Have I waited for discovery approval?
+4. ❌ Did I jump to implementation?
+5. ❌ Did I create todos before discovery?
+
+If you answered ❌ to any question, STOP and invoke orchestrator.
+
+### User Check
+
+If you find yourself creating implementation todos, ask:
+```
+"Wait - we haven't done discovery yet! Can we pause and run the
+90-minute discovery interview first? This will ensure we build
+the right thing."
+```
+
+---
+
+## Documentation References
+
+- **Orchestrator Skill:** `.claude/skills/saas-project-orchestrator/SKILL.md`
+- **Discovery Skill:** `.claude/skills/discovery-interviewer/SKILL.md`
+- **Discovery Framework:** `.claude/skills/discovery-interviewer/references/discovery-framework.md`
+
+---
+
+## Summary: The Rule in One Sentence
+
+**When user wants to build NEW SaaS project → Invoke saas-project-orchestrator → Discovery runs first → Then implementation.**
+
+---
+
+## Checklist for AI Agents
+
+When you see "build new [X]", use this checklist:
+
+```
+□ Recognize new project trigger
+□ Invoke saas-project-orchestrator skill
+□ Wait for orchestrator to run discovery (Phase 0)
+□ Wait for user approval of discovery doc
+□ Let orchestrator proceed through phases
+□ Do NOT create implementation todos prematurely
+□ Do NOT jump to tech stack questions
+□ Do NOT create project files before discovery
+```
+
+---
+
+**Version:** 1.0
+**Last Updated:** 2025-01-14
+**Status:** Critical - Always enforce
+**Next Review:** After 10 projects

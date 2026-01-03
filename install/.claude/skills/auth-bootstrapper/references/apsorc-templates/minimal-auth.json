@@ -1,0 +1,238 @@
+{
+  "version": 2,
+  "rootFolder": "src",
+  "service": "minimal-auth-backend",
+  "database": {
+    "provider": "postgresql",
+    "multiTenant": true,
+    "tenantKey": "organization_id"
+  },
+  "entities": [
+    {
+      "name": "Organization",
+      "description": "Multi-tenant root entity (renamed from Account to avoid Better Auth conflicts)",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "updated_at": true,
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "length": 255,
+          "required": true
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "length": 100,
+          "unique": true,
+          "required": true,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        {
+          "name": "billing_email",
+          "type": "text",
+          "length": 255,
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Better Auth user entity - authentication users",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "updated_at": true,
+      "fields": [
+        {
+          "name": "email",
+          "type": "text",
+          "length": 255,
+          "unique": true,
+          "required": true
+        },
+        {
+          "name": "email_verified",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "length": 255,
+          "required": true
+        },
+        {
+          "name": "avatar_url",
+          "type": "text",
+          "length": 500,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "AccountUser",
+      "description": "Junction table for User-Organization relationship",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "fields": [
+        {
+          "name": "role",
+          "type": "enum",
+          "values": ["owner", "admin", "member"],
+          "default": "owner",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "session",
+      "description": "Better Auth session management",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "updated_at": true,
+      "fields": [
+        {
+          "name": "userId",
+          "type": "text",
+          "length": 36,
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "text",
+          "length": 255,
+          "unique": true,
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "required": true
+        },
+        {
+          "name": "ipAddress",
+          "type": "text",
+          "length": 45,
+          "nullable": true
+        },
+        {
+          "name": "userAgent",
+          "type": "text",
+          "length": 500,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "account",
+      "description": "Better Auth account entity - STORES PASSWORDS! Links users to auth providers (credential, Google, GitHub, etc.)",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "updated_at": true,
+      "fields": [
+        {
+          "name": "userId",
+          "type": "text",
+          "length": 36,
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "text",
+          "length": 255,
+          "nullable": true
+        },
+        {
+          "name": "providerId",
+          "type": "text",
+          "length": 50,
+          "nullable": true,
+          "description": "CRITICAL: Must be 'credential' for email/password auth. Better Auth uses: accounts.find(a => a.providerId === 'credential')"
+        },
+        {
+          "name": "accessToken",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "refreshToken",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "accessTokenExpiresAt",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "refreshTokenExpiresAt",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "length": 500,
+          "nullable": true
+        },
+        {
+          "name": "idToken",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "password",
+          "type": "text",
+          "length": 255,
+          "nullable": true,
+          "description": "Bcrypt-hashed password. STORED HERE, not in User table! Only for credential (email/password) accounts."
+        }
+      ]
+    },
+    {
+      "name": "Verification",
+      "description": "Better Auth email verification and password reset tokens",
+      "primaryKeyType": "uuid",
+      "created_at": true,
+      "updated_at": true,
+      "fields": [
+        {
+          "name": "identifier",
+          "type": "text",
+          "length": 255,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "length": 255,
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "AccountUser",
+      "to": "Organization",
+      "type": "ManyToOne",
+      "fromField": "account_id",
+      "toField": "id",
+      "onDelete": "CASCADE"
+    },
+    {
+      "from": "AccountUser",
+      "to": "User",
+      "type": "ManyToOne",
+      "fromField": "user_id",
+      "toField": "id",
+      "onDelete": "CASCADE"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+site_name: Mavric AI Toolchain
+site_description: Mavric's AI-Assisted Development Toolchain for building production-ready SaaS applications
+site_url: https://mavrictech.github.io/devenv
+repo_url: https://github.com/mavrictech/devenv
+repo_name: mavrictech/devenv
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: mavric
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: mavric-dark
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+  icon:
+    repo: fontawesome/brands/github
+
+  logo: assets/logo.svg
+  favicon: assets/favicon.png
+
+plugins:
+  - search
+  - tags
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mavrictech/devenv
+    - icon: fontawesome/solid/globe
+      link: https://mavrictech.com
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quick Start: getting-started/quickstart.md
+    - Installation: getting-started/installation.md
+    - Your First Project: getting-started/first-project.md
+  - Core Concepts:
+    - Overview: concepts/overview.md
+    - Why Mavric?: concepts/why-mavric.md
+    - SaaS Capabilities: concepts/saas-capabilities.md
+    - Discovery-First Development: concepts/discovery-first.md
+    - Project Structure: concepts/project-structure.md
+    - The Development Workflow: concepts/workflow.md
+  - Commands:
+    - Overview: commands/index.md
+    - /start-project: commands/start-project.md
+    - /discovery-only: commands/discovery-only.md
+    - /init: commands/init.md
+    - /schema: commands/schema.md
+    - /tests: commands/tests.md
+    - /plan: commands/plan.md
+    - /verify: commands/verify.md
+  - Skills:
+    - Overview: skills/index.md
+    - SaaS Project Orchestrator: skills/saas-project-orchestrator.md
+    - Discovery Interviewer: skills/discovery-interviewer.md
+    - Schema Architect: skills/schema-architect.md
+    - Backend Bootstrapper: skills/backend-bootstrapper.md
+    - Auth Bootstrapper: skills/auth-bootstrapper.md
+    - Test Generator: skills/test-generator.md
+    - Feature Builder: skills/feature-builder.md
+    - Product Brief Writer: skills/product-brief-writer.md
+  - Setup:
+    - Overview: setup/index.md
+    - Automated Setup: setup/automated-setup.md
+    - Templates: setup/templates.md
+    - Common Tasks: setup/scripts-reference.md
+  - Standards:
+    - Overview: standards/index.md
+    - Contribution Standards: standards/contribution-standards.md
+    - Code Structure: standards/code-structure.md
+    - Security Standards: standards/security-standards.md
+    - Testing Standards: standards/testing-standards.md
+  - Reference:
+    - Tech Stack: reference/tech-stack.md
+    - API Patterns: reference/api-patterns.md
+    - Troubleshooting: reference/troubleshooting.md

@@ -1,0 +1,235 @@
+/* Mavric AI Toolchain - Brand Colors */
+/* Primary: #000000 (Black), #32373c (Dark Gray) */
+/* Accent: #0693e3 (Cyan Blue), #9b51e0 (Purple), #ff6900 (Orange) */
+/* Neutral: #ffffff (White), #abb8c3 (Gray) */
+
+/* Light theme color scheme */
+[data-md-color-scheme="mavric"] {
+  --md-primary-fg-color: #000000;
+  --md-primary-fg-color--light: #32373c;
+  --md-primary-fg-color--dark: #000000;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: #f8f9fa;
+
+  --md-accent-fg-color: #0693e3;
+  --md-accent-fg-color--transparent: rgba(6, 147, 227, 0.1);
+  --md-accent-bg-color: #0693e3;
+  --md-accent-bg-color--light: rgba(6, 147, 227, 0.1);
+
+  /* Header */
+  --md-typeset-a-color: #0693e3;
+
+  /* Code */
+  --md-code-bg-color: #f5f5f5;
+  --md-code-fg-color: #32373c;
+}
+
+/* Dark theme color scheme */
+[data-md-color-scheme="mavric-dark"] {
+  --md-primary-fg-color: #ffffff;
+  --md-primary-fg-color--light: #abb8c3;
+  --md-primary-fg-color--dark: #ffffff;
+  --md-primary-bg-color: #1a1a1a;
+  --md-primary-bg-color--light: #2d2d2d;
+
+  --md-accent-fg-color: #0693e3;
+  --md-accent-fg-color--transparent: rgba(6, 147, 227, 0.2);
+  --md-accent-bg-color: #0693e3;
+  --md-accent-bg-color--light: rgba(6, 147, 227, 0.1);
+
+  --md-default-fg-color: rgba(255, 255, 255, 0.87);
+  --md-default-fg-color--light: rgba(255, 255, 255, 0.54);
+  --md-default-fg-color--lighter: rgba(255, 255, 255, 0.32);
+  --md-default-fg-color--lightest: rgba(255, 255, 255, 0.12);
+  --md-default-bg-color: #1a1a1a;
+  --md-default-bg-color--light: #2d2d2d;
+  --md-default-bg-color--lighter: #3d3d3d;
+  --md-default-bg-color--lightest: #4d4d4d;
+
+  /* Header */
+  --md-typeset-a-color: #0693e3;
+
+  /* Code */
+  --md-code-bg-color: #2d2d2d;
+  --md-code-fg-color: #e0e0e0;
+}
+
+/* Header styling */
+.md-header {
+  background-color: #000000;
+}
+
+[data-md-color-scheme="mavric-dark"] .md-header {
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #32373c;
+}
+
+/* Navigation tabs */
+.md-tabs {
+  background-color: #000000;
+}
+
+[data-md-color-scheme="mavric-dark"] .md-tabs {
+  background-color: #1a1a1a;
+}
+
+/* Improve code block styling */
+.md-typeset code {
+  font-size: 0.85em;
+}
+
+/* Custom admonition for skills - Purple accent */
+.md-typeset .admonition.skill,
+.md-typeset details.skill {
+  border-color: #9b51e0;
+}
+.md-typeset .skill > .admonition-title,
+.md-typeset .skill > summary {
+  background-color: rgba(155, 81, 224, 0.1);
+}
+.md-typeset .skill > .admonition-title::before,
+.md-typeset .skill > summary::before {
+  background-color: #9b51e0;
+  -webkit-mask-image: var(--md-admonition-icon--tip);
+  mask-image: var(--md-admonition-icon--tip);
+}
+
+/* Custom admonition for commands - Cyan accent */
+.md-typeset .admonition.command,
+.md-typeset details.command {
+  border-color: #0693e3;
+}
+.md-typeset .command > .admonition-title,
+.md-typeset .command > summary {
+  background-color: rgba(6, 147, 227, 0.1);
+}
+.md-typeset .command > .admonition-title::before,
+.md-typeset .command > summary::before {
+  background-color: #0693e3;
+  -webkit-mask-image: var(--md-admonition-icon--example);
+  mask-image: var(--md-admonition-icon--example);
+}
+
+/* Custom admonition for important/critical - Orange accent */
+.md-typeset .admonition.critical,
+.md-typeset details.critical {
+  border-color: #ff6900;
+}
+.md-typeset .critical > .admonition-title,
+.md-typeset .critical > summary {
+  background-color: rgba(255, 105, 0, 0.1);
+}
+.md-typeset .critical > .admonition-title::before,
+.md-typeset .critical > summary::before {
+  background-color: #ff6900;
+  -webkit-mask-image: var(--md-admonition-icon--warning);
+  mask-image: var(--md-admonition-icon--warning);
+}
+
+/* Hero section styling */
+.hero {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hero .tagline {
+  font-size: 1.25rem;
+  color: var(--md-default-fg-color--light);
+  margin-bottom: 2rem;
+}
+
+/* Feature grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.feature-card {
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  border-color: #0693e3;
+  box-shadow: 0 4px 12px rgba(6, 147, 227, 0.15);
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  color: var(--md-default-fg-color);
+}
+
+.feature-card .icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Table improvements */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+/* Button styling */
+.md-typeset .md-button {
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.md-typeset .md-button--primary {
+  background-color: #0693e3;
+  border-color: #0693e3;
+}
+
+.md-typeset .md-button--primary:hover {
+  background-color: #0577b8;
+  border-color: #0577b8;
+}
+
+/* Logo in header */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 1.5rem;
+  width: auto;
+}
+
+/* Footer */
+.md-footer {
+  background-color: #000000;
+}
+
+[data-md-color-scheme="mavric-dark"] .md-footer {
+  background-color: #1a1a1a;
+}
+
+/* Search highlight */
+.md-search__form {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar active item */
+.md-nav__link--active {
+  color: #0693e3 !important;
+}
+
+/* Code copy button */
+.md-clipboard {
+  color: var(--md-default-fg-color--light);
+}
+
+.md-clipboard:hover {
+  color: #0693e3;
+}

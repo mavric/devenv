@@ -1,0 +1,412 @@
+---
+description: BDD/Gherkin testing standards and enforcement rules
+globs:
+  - "**/*.feature"
+  - "**/features/**"
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+alwaysApply: true
+---
+
+# Rule: BDD/Gherkin Testing Standards
+
+This rule enforces consistent BDD testing practices using Gherkin scenarios across all projects.
+
+---
+
+## When to Create Gherkin Tests
+
+### MUST Create Tests For:
+
+#### 1. Every User Story
+```gherkin
+# REQUIRED: One feature file per user story
+Feature: [User Story Title]
+  As a [user type]
+  I want [action/feature]
+  So that [business value]
+
+  # Minimum 3 scenarios: happy path, error case, edge case
+```
+
+#### 2. API Endpoints
+```gherkin
+# REQUIRED: Test every endpoint
+@api @endpoint
+Scenario: [HTTP_METHOD] [endpoint_path]
+  Given I have a valid request payload
+  When I send a [METHOD] request to "[path]"
+  Then the response status should be [code]
+```
+
+#### 3. Critical User Paths
+```gherkin
+# REQUIRED: Test business-critical workflows
+@critical-path @smoke
+Scenario: [Critical business flow]
+  Given [initial state]
+  When [user completes critical action]
+  Then [business value is delivered]
+```
+
+### SHOULD Create Tests For:
+- Form validations (positive and negative cases)
+- State transitions
+- Error recovery flows
+- Permission boundaries
+- Data persistence
+
+### MAY Skip Tests For:
+- Pure CSS changes
+- Console.log statements
+- Development utilities
+- Third-party library internals
+
+---
+
+## Feature File Structure
+
+### Required Sections
+
+```gherkin
+# features/[layer]/[module]/[feature].feature
+
+Feature: [Descriptive feature name]              # REQUIRED
+  [Optional description paragraph]               # OPTIONAL
+
+  Background:                                     # OPTIONAL (use for shared context)
+    Given [common setup for all scenarios]
+
+  @tag1 @tag2                                   # REQUIRED (minimum 2 tags)
+  Scenario: [Specific test case]                # REQUIRED (descriptive name)
+    Given [initial context]                     # REQUIRED
+    When [action performed]                     # REQUIRED
+    Then [expected outcome]                     # REQUIRED
+    And [additional validations]                # OPTIONAL
+```
+
+### File Organization
+
+```
+features/
+├── api/                          # Backend API tests
+│   ├── auth/                    # Authentication module
+│   │   ├── login.feature       # Login endpoints
+│   │   ├── logout.feature      # Logout endpoints
+│   │   └── session.feature     # Session management
+│   ├── crud/                    # CRUD operations
+│   │   └── [entity].feature    # One file per entity
+│   └── integrations/            # Third-party integrations
+├── ui/                          # Frontend UI tests
+│   ├── components/              # Component tests
+│   ├── forms/                   # Form validations
+│   └── pages/                   # Page-level tests
+└── e2e/                         # End-to-end tests
+    ├── critical-paths/          # Business-critical flows
+    ├── user-journeys/           # Complete workflows
+    └── smoke-tests/             # Quick verification
+```
+
+---
+
+## Naming Conventions
+
+### Feature Names
+```gherkin
+# ✅ GOOD: Clear, business-focused
+Feature: User Registration with Email Verification
+
+# ❌ BAD: Technical or vague
+Feature: Test User Stuff
+```
+
+### Scenario Names
+```gherkin
+# ✅ GOOD: Describes specific behavior
+Scenario: Display error when email is already registered
+
+# ❌ BAD: Generic or unclear
+Scenario: Test error
+```
+
+### Step Definitions
+```gherkin
+# ✅ GOOD: Reusable and parameterized
+When I click the {string} button
+Then I should see {int} items in the list
+
+# ❌ BAD: Hardcoded and specific
+When I click the submit button on the login form
+Then I should see exactly 5 items
+```
+
+---
+
+## Tag Usage Standards
+
+### Required Tags (Every Scenario)
+
+```gherkin
+@layer    # One of: @api, @ui, @e2e
+@priority # One of: @smoke, @critical, @regression, @optional
+```
+
+### Feature Tags
+
+```gherkin
+@auth           # Authentication features
+@payment        # Payment/billing features
+@crud           # CRUD operations
+@integration    # Third-party integrations
+@workflow       # Multi-step processes
+```
+
+### Test Type Tags
+
+```gherkin
+@positive       # Happy path scenarios
+@negative       # Error/validation scenarios
+@edge-case      # Boundary conditions
+@security       # Security-related tests
+@performance    # Performance benchmarks
+```
+
+### Execution Tags
+
+```gherkin
+@smoke          # Run first, must always pass
+@daily          # Run in daily CI/CD
+@nightly        # Run in nightly builds
+@manual         # Requires manual execution
+@wip            # Work in progress (skip in CI)
+```
+
+### Example Tagged Scenario
+
+```gherkin
+@api @auth @smoke @positive
+Scenario: Successful login returns JWT token
+  Given I have valid login credentials
+  When I send a POST request to "/api/auth/login"
+  Then the response status should be 200
+  And the response should contain a JWT token
+```
+
+---
+
+## Traceability Requirements
+
+### Every Feature MUST Include:
+
+#### 1. Task Reference
+```gherkin
+Feature: Discovery Session Management
+  # Task: TASK-123
+  # User Story: STORY-456
+```
+
+#### 2. Acceptance Criteria Link
+```gherkin
+# Each scenario should map to acceptance criteria
+Scenario: Create session with required fields    # AC-1
+Scenario: Validation prevents empty submission   # AC-2
+Scenario: Display success message after creation # AC-3
+```
+
+#### 3. Coverage Documentation
+```markdown
+# In feature file header comment:
+# Coverage:
+# - Endpoints: POST /api/sessions, GET /api/sessions
+# - Components: SessionForm, SessionList
+# - User Flow: Landing → Submit → View List
+```
+
+---
+
+## Test Review Checklist
+
+Before committing feature files, verify:
+
+### Structure
+- [ ] Feature has clear business value in description
+- [ ] Each scenario is independent (no dependencies)
+- [ ] Background is used appropriately (shared context only)
+- [ ] No more than 10-15 scenarios per feature file
+
+### Naming
+- [ ] Feature name describes user capability
+- [ ] Scenario names are specific and descriptive
+- [ ] Steps use business language, not technical
+
+### Tags
+- [ ] Every scenario has required tags (@layer, @priority)
+- [ ] Tags are consistent with project taxonomy
+- [ ] No duplicate or conflicting tags
+
+### Content
+- [ ] Given-When-Then structure is followed
+- [ ] Steps are reusable (parameterized where appropriate)
+- [ ] No implementation details in scenarios
+- [ ] Data tables used for complex inputs
+
+### Traceability
+- [ ] Links to task/user story included
+- [ ] Acceptance criteria mapped
+- [ ] Coverage documented
+
+---
+
+## Common Violations and Fixes
+
+### ❌ Missing Tags
+```gherkin
+# WRONG
+Scenario: User can login
+
+# FIXED
+@ui @auth @smoke @positive
+Scenario: User can login with valid credentials
+```
+
+### ❌ Technical Language
+```gherkin
+# WRONG
+When I execute POST /api/v1/users with JSON payload
+
+# FIXED
+When I submit the registration form
+```
+
+### ❌ Dependent Scenarios
+```gherkin
+# WRONG
+Scenario: Create user
+  When I create a user named "Test"
+
+Scenario: Login with created user
+  When I login as "Test"  # Depends on previous scenario
+
+# FIXED
+Scenario: Create and login with new user
+  Given I register a new user account
+  When I login with the new credentials
+  Then I should access the dashboard
+```
+
+### ❌ Implementation Details
+```gherkin
+# WRONG
+Then the useState hook should update
+And the Redux store should contain the user
+
+# FIXED
+Then I should see my profile information
+And I should remain logged in on page refresh
+```
+
+### ❌ Overly Complex Scenarios
+```gherkin
+# WRONG - Too many steps
+Scenario: Complete purchase
+  Given I am logged in
+  And I have items in cart
+  And I have a saved address
+  And I have a saved payment method
+  When I go to checkout
+  And I confirm my address
+  And I select shipping
+  And I confirm payment
+  And I apply coupon
+  And I accept terms
+  And I click purchase
+  Then I should see confirmation
+  And I should receive email
+  And I should see order in history
+  And inventory should be updated
+
+# FIXED - Focused scenarios
+Scenario: Complete purchase with saved details
+  Given I have items in my cart and saved payment details
+  When I complete the express checkout
+  Then I should receive an order confirmation
+
+Scenario: Receive purchase confirmation email
+  Given I have completed a purchase
+  Then I should receive a confirmation email within 5 minutes
+```
+
+---
+
+## Enforcement in CI/CD
+
+### Pre-commit Hooks
+```bash
+# .husky/pre-commit
+npm run lint:gherkin
+npm run test:tags
+```
+
+### CI Pipeline Checks
+```yaml
+- name: Validate Gherkin syntax
+  run: npm run gherkin:lint
+
+- name: Check test coverage
+  run: npm run test:coverage -- --min=80
+
+- name: Verify traceability
+  run: npm run test:traceability
+```
+
+### Pull Request Checklist
+```markdown
+## Testing Checklist
+- [ ] All new features have Gherkin scenarios
+- [ ] Tests follow naming conventions
+- [ ] Required tags are present
+- [ ] Traceability matrix updated
+- [ ] All tests passing locally
+```
+
+---
+
+## Quick Reference Card
+
+### Minimum Test Requirements by Feature Type
+
+| Feature Type | API Tests | UI Tests | E2E Tests | Total Minimum |
+|-------------|-----------|----------|-----------|---------------|
+| CRUD Entity | 8-10 | 5-7 | 2-3 | 15-20 |
+| Authentication | 6-8 | 8-10 | 3-4 | 17-22 |
+| Payment Flow | 5-6 | 6-8 | 4-5 | 15-19 |
+| Search/Filter | 4-5 | 4-5 | 1-2 | 9-12 |
+| File Upload | 3-4 | 3-4 | 2-3 | 8-11 |
+
+### Test Distribution Guidelines
+
+```yaml
+Phase 1 (MVP):
+  API: 40%
+  UI: 45%
+  E2E: 15%
+
+Phase 2 (Growth):
+  API: 35%
+  UI: 45%
+  E2E: 20%
+
+Phase 3 (Scale):
+  API: 30%
+  UI: 40%
+  E2E: 30%
+```
+
+---
+
+**Version:** 1.0
+**Last Updated:** 2025-01-13
+**Enforcement:** Required for all new features
+**Review Frequency:** Every sprint

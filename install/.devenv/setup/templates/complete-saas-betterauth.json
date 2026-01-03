@@ -1,0 +1,846 @@
+{
+  "$schema": "https://apsolib.com/schemas/apsorc.schema.json",
+  "entities": [
+    {
+      "name": "user",
+      "comment": "BetterAuth core user table - DO NOT rename. Stores authentication credentials and basic user info.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique user identifier (BetterAuth uses string IDs by default)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "comment": "User's full display name"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "unique": true,
+          "comment": "Primary email for authentication (must be unique)"
+        },
+        {
+          "name": "emailVerified",
+          "type": "boolean",
+          "comment": "Whether email has been verified via verification token"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "optional": true,
+          "comment": "Profile image URL (optional, often from OAuth providers)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Account creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last profile update timestamp"
+        }
+      ]
+    },
+    {
+      "name": "session",
+      "comment": "BetterAuth session table - DO NOT rename. Tracks active user sessions across devices.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique session identifier (token)"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "comment": "Session expiration time for auto-logout"
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "unique": true,
+          "comment": "Session token sent to client (must be unique)"
+        },
+        {
+          "name": "ipAddress",
+          "type": "string",
+          "optional": true,
+          "comment": "IP address of session for security tracking"
+        },
+        {
+          "name": "userAgent",
+          "type": "string",
+          "optional": true,
+          "comment": "Browser/device info for session management"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Session creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last session activity timestamp"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        }
+      ]
+    },
+    {
+      "name": "account",
+      "comment": "BetterAuth account table - DO NOT rename. Stores OAuth provider connections (Google, GitHub, etc).",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique account identifier"
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "comment": "Provider's unique ID for this user (e.g., Google user ID)"
+        },
+        {
+          "name": "providerId",
+          "type": "string",
+          "comment": "OAuth provider identifier (google, github, etc)"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table (one user can have multiple OAuth accounts)"
+        },
+        {
+          "name": "accessToken",
+          "type": "string",
+          "optional": true,
+          "comment": "OAuth access token for API calls to provider"
+        },
+        {
+          "name": "refreshToken",
+          "type": "string",
+          "optional": true,
+          "comment": "OAuth refresh token for renewing access"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "optional": true,
+          "comment": "When the access token expires"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "optional": true,
+          "comment": "Hashed password for email/password auth (null for OAuth-only)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "When provider was linked"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last token refresh timestamp"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        }
+      ]
+    },
+    {
+      "name": "verification",
+      "comment": "BetterAuth verification table - DO NOT rename. Handles email verification and password reset tokens.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique verification request ID"
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "comment": "Email address being verified"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "comment": "Verification token/code sent to user"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "comment": "Token expiration time (typically 15-60 minutes)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "optional": true,
+          "comment": "When verification was requested"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Last update timestamp"
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "comment": "Multi-tenant organization/workspace entity. Each org is a separate tenant with its own data.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique organization identifier (auto-generated UUID)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "comment": "Organization display name (e.g., 'Acme Corp')"
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "unique": true,
+          "comment": "URL-safe identifier (e.g., 'acme-corp' for acme-corp.yourapp.com)"
+        },
+        {
+          "name": "logo",
+          "type": "string",
+          "optional": true,
+          "comment": "Organization logo URL"
+        },
+        {
+          "name": "website",
+          "type": "string",
+          "optional": true,
+          "comment": "Organization website URL"
+        },
+        {
+          "name": "plan",
+          "type": "string",
+          "comment": "Subscription plan tier (free, starter, pro, enterprise)"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "comment": "Organization status (active, suspended, cancelled)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Organization creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last update timestamp"
+        },
+        {
+          "name": "deletedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Soft delete timestamp (enables account recovery)"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["slug"],
+          "unique": true,
+          "comment": "Fast lookup by slug for subdomain routing"
+        },
+        {
+          "fields": ["status"],
+          "comment": "Filter active/suspended organizations"
+        }
+      ]
+    },
+    {
+      "name": "AccountUser",
+      "comment": "Junction table linking users to organizations with roles. Enables multi-tenancy and team collaboration.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique membership record ID"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "comment": "Foreign key to user table"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization table"
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "comment": "User's role in this org (owner, admin, member, viewer)"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "comment": "Membership status (active, invited, suspended)"
+        },
+        {
+          "name": "invitedBy",
+          "type": "string",
+          "optional": true,
+          "comment": "User ID who sent the invitation"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "When user joined or was invited"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last role/status update"
+        },
+        {
+          "name": "deletedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Soft delete for audit trail"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["userId", "organizationId"],
+          "unique": true,
+          "comment": "Prevent duplicate memberships"
+        },
+        {
+          "fields": ["organizationId", "role"],
+          "comment": "Fast role-based access control queries"
+        }
+      ]
+    },
+    {
+      "name": "Subscription",
+      "comment": "Billing subscriptions for organizations. Tracks plan, payment method, and renewal dates.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique subscription identifier"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization (one-to-one relationship)"
+        },
+        {
+          "name": "stripeSubscriptionId",
+          "type": "string",
+          "optional": true,
+          "unique": true,
+          "comment": "Stripe subscription ID for webhook sync"
+        },
+        {
+          "name": "stripeCustomerId",
+          "type": "string",
+          "optional": true,
+          "comment": "Stripe customer ID for payment method management"
+        },
+        {
+          "name": "plan",
+          "type": "string",
+          "comment": "Plan tier (free, starter, pro, enterprise)"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "comment": "Subscription status (active, past_due, cancelled, trialing)"
+        },
+        {
+          "name": "currentPeriodStart",
+          "type": "date",
+          "comment": "Start of current billing cycle"
+        },
+        {
+          "name": "currentPeriodEnd",
+          "type": "date",
+          "comment": "End of current billing cycle (renewal date)"
+        },
+        {
+          "name": "cancelAtPeriodEnd",
+          "type": "boolean",
+          "comment": "Whether to cancel at end of period (downgrade to free)"
+        },
+        {
+          "name": "trialEnd",
+          "type": "date",
+          "optional": true,
+          "comment": "Trial expiration date (null if no trial)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Subscription creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last update from Stripe webhook"
+        },
+        {
+          "name": "deletedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Soft delete timestamp"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["organizationId"],
+          "unique": true,
+          "comment": "One subscription per organization"
+        },
+        {
+          "fields": ["stripeSubscriptionId"],
+          "comment": "Fast webhook lookups"
+        },
+        {
+          "fields": ["status", "currentPeriodEnd"],
+          "comment": "Find expiring/past-due subscriptions"
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "comment": "Billing invoices generated for subscription charges. Synced from Stripe webhooks.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique invoice identifier"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization"
+        },
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "comment": "Foreign key to Subscription"
+        },
+        {
+          "name": "stripeInvoiceId",
+          "type": "string",
+          "unique": true,
+          "comment": "Stripe invoice ID for webhook sync"
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "comment": "Invoice amount in cents (e.g., 2999 for $29.99)"
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "comment": "Currency code (usd, eur, gbp, etc)"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "comment": "Payment status (paid, open, void, uncollectible)"
+        },
+        {
+          "name": "invoiceUrl",
+          "type": "string",
+          "optional": true,
+          "comment": "Stripe hosted invoice URL for customer download"
+        },
+        {
+          "name": "pdfUrl",
+          "type": "string",
+          "optional": true,
+          "comment": "PDF download URL"
+        },
+        {
+          "name": "periodStart",
+          "type": "date",
+          "comment": "Billing period start date"
+        },
+        {
+          "name": "periodEnd",
+          "type": "date",
+          "comment": "Billing period end date"
+        },
+        {
+          "name": "paidAt",
+          "type": "date",
+          "optional": true,
+          "comment": "When payment was successfully processed"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Invoice creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last update from Stripe webhook"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Subscription",
+          "foreignKey": "subscriptionId"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["organizationId", "createdAt"],
+          "comment": "List organization invoices chronologically"
+        },
+        {
+          "fields": ["stripeInvoiceId"],
+          "unique": true,
+          "comment": "Fast webhook lookups"
+        },
+        {
+          "fields": ["status"],
+          "comment": "Find unpaid invoices"
+        }
+      ]
+    },
+    {
+      "name": "ApiKey",
+      "comment": "API keys for programmatic access. Scoped to organizations for multi-tenancy.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique API key identifier"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization (tenant isolation)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "comment": "Human-readable key name (e.g., 'Production API', 'CI/CD Pipeline')"
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "unique": true,
+          "comment": "Hashed API key (never store plaintext). Show plaintext only once on creation."
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "comment": "First 8 chars of key for identification (e.g., 'sk_live_')"
+        },
+        {
+          "name": "lastUsedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Last API call timestamp for usage tracking"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Optional expiration date for security"
+        },
+        {
+          "name": "createdBy",
+          "type": "string",
+          "comment": "User ID who created the key"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Key creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last update timestamp"
+        },
+        {
+          "name": "deletedAt",
+          "type": "date",
+          "optional": true,
+          "comment": "Soft delete for revoked keys (audit trail)"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "createdBy"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["key"],
+          "unique": true,
+          "comment": "Fast authentication lookups"
+        },
+        {
+          "fields": ["organizationId"],
+          "comment": "List all keys for an organization"
+        },
+        {
+          "fields": ["prefix"],
+          "comment": "Identify key from prefix"
+        }
+      ]
+    },
+    {
+      "name": "AuditLog",
+      "comment": "Security audit trail for compliance. Tracks all sensitive actions (user changes, data access, etc).",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique audit event identifier"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization (tenant isolation)"
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "optional": true,
+          "comment": "User who performed action (null for system events)"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "comment": "Action type (user.login, org.created, data.exported, etc)"
+        },
+        {
+          "name": "entityType",
+          "type": "string",
+          "optional": true,
+          "comment": "Entity affected (User, Organization, Invoice, etc)"
+        },
+        {
+          "name": "entityId",
+          "type": "string",
+          "optional": true,
+          "comment": "ID of affected entity"
+        },
+        {
+          "name": "metadata",
+          "type": "json",
+          "optional": true,
+          "comment": "Additional context (IP, user agent, changed fields, etc)"
+        },
+        {
+          "name": "ipAddress",
+          "type": "string",
+          "optional": true,
+          "comment": "Request IP address for security tracking"
+        },
+        {
+          "name": "userAgent",
+          "type": "string",
+          "optional": true,
+          "comment": "Browser/device information"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "When action occurred (immutable)"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "userId"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["organizationId", "createdAt"],
+          "comment": "List organization audit logs chronologically"
+        },
+        {
+          "fields": ["userId", "createdAt"],
+          "comment": "Track user activity timeline"
+        },
+        {
+          "fields": ["action"],
+          "comment": "Filter by action type"
+        },
+        {
+          "fields": ["entityType", "entityId"],
+          "comment": "Find all changes to a specific entity"
+        }
+      ]
+    },
+    {
+      "name": "Invitation",
+      "comment": "Email invitations to join organizations. Expires after 7 days by default.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "primaryKey": true,
+          "comment": "Unique invitation identifier"
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "comment": "Foreign key to Organization being joined"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "comment": "Invitee email address"
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "comment": "Role to assign when accepted (admin, member, viewer)"
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "unique": true,
+          "comment": "Unique invitation token for URL (random UUID)"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "comment": "Invitation status (pending, accepted, expired, revoked)"
+        },
+        {
+          "name": "invitedBy",
+          "type": "string",
+          "comment": "User ID who sent invitation"
+        },
+        {
+          "name": "acceptedBy",
+          "type": "string",
+          "optional": true,
+          "comment": "User ID who accepted (null if pending)"
+        },
+        {
+          "name": "expiresAt",
+          "type": "date",
+          "comment": "Invitation expiration timestamp (typically +7 days)"
+        },
+        {
+          "name": "createdAt",
+          "type": "date",
+          "comment": "Invitation sent timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "date",
+          "comment": "Last status update"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "manyToOne",
+          "relatedEntity": "Organization",
+          "foreignKey": "organizationId"
+        },
+        {
+          "type": "manyToOne",
+          "relatedEntity": "user",
+          "foreignKey": "invitedBy"
+        }
+      ],
+      "indexes": [
+        {
+          "fields": ["token"],
+          "unique": true,
+          "comment": "Fast lookup by invitation link"
+        },
+        {
+          "fields": ["organizationId", "status"],
+          "comment": "List pending invitations for organization"
+        },
+        {
+          "fields": ["email", "organizationId", "status"],
+          "comment": "Prevent duplicate pending invitations"
+        }
+      ]
+    }
+  ]
+}
