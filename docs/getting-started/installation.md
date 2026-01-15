@@ -1,6 +1,29 @@
 # Installation
 
-Complete installation guide for Mavric AI Toolchain.
+Install Mavric DevEnv skills for Claude Code.
+
+---
+
+## Quick Install (Recommended)
+
+Run this in your project directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
+```
+
+That's it! The installer will add:
+
+- `.claude/` - AI skills and commands
+- `.devenv/` - Development standards and references
+
+Then open Claude Code and say: "I want to build a SaaS for [your idea]"
+
+---
+
+## Full Installation Guide
+
+The sections below cover detailed setup including prerequisites.
 
 ---
 
