@@ -73,34 +73,24 @@ main() {
         exit 1
     }
 
-    # Check for existing installations
+    # Install .claude (merge with existing)
     if [ -d "$target_dir/.claude" ]; then
-        log_warn "Existing .claude directory found"
-        read -p "Overwrite? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Skipping .claude installation"
-        else
-            rm -rf "$target_dir/.claude"
-            cp -r "$TEMP_DIR/devenv/install/.claude" "$target_dir/.claude"
-            log_success ".claude installed"
-        fi
+        log_info "Existing .claude directory found - merging..."
+        # Merge: copy our files, preserving user's custom files
+        # -n = no clobber (don't overwrite), but we WANT to update our files
+        # So we use cp without -n, which overwrites matching files but keeps others
+        cp -r "$TEMP_DIR/devenv/install/.claude/"* "$target_dir/.claude/"
+        log_success ".claude merged (your custom files preserved)"
     else
         cp -r "$TEMP_DIR/devenv/install/.claude" "$target_dir/.claude"
         log_success ".claude installed"
     fi
 
+    # Install .devenv (merge with existing)
     if [ -d "$target_dir/.devenv" ]; then
-        log_warn "Existing .devenv directory found"
-        read -p "Overwrite? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Skipping .devenv installation"
-        else
-            rm -rf "$target_dir/.devenv"
-            cp -r "$TEMP_DIR/devenv/install/.devenv" "$target_dir/.devenv"
-            log_success ".devenv installed"
-        fi
+        log_info "Existing .devenv directory found - merging..."
+        cp -r "$TEMP_DIR/devenv/install/.devenv/"* "$target_dir/.devenv/"
+        log_success ".devenv merged (your custom files preserved)"
     else
         cp -r "$TEMP_DIR/devenv/install/.devenv" "$target_dir/.devenv"
         log_success ".devenv installed"
