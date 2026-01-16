@@ -481,6 +481,27 @@ Before marking bootstrap as complete, I verify:
 - ✅ Environment variables configured
 - ✅ Docker Compose running
 
+## Critical Configuration Rules
+
+**IMPORTANT:** Before running any Apso commands, review the learnings document at `.devenv/docs/reference/APSO-SETUP-LEARNINGS.md` for verified fixes.
+
+### Key Rules Summary
+
+1. **`.apsorc` rootFolder must be `./src`** - Not `src`, not `./src/generated`, exactly `./src`
+2. **Docker compose scripts must use env vars** - Don't append `:5432` to DATABASE_PORT
+3. **Provision scripts must use env credentials** - Use `${DATABASE_USERNAME}` not hardcoded `root`
+4. **Quote values with spaces in `.env`** - `APP_NAME="GoLotus API"` not `APP_NAME=GoLotus API`
+5. **Remove `version` from docker-compose.yml** - It's deprecated in Docker Compose v2
+
+### Verification Checklist
+```bash
+# After setup, these should all work:
+npm run compose      # PostgreSQL container starts
+npm run provision    # Tables created successfully
+npm run start:dev    # Server on expected port
+curl http://localhost:3100/health  # "I am up!"
+```
+
 ## Common Issues & Solutions
 
 **Issue:** "Cannot connect to database"
@@ -494,6 +515,15 @@ Before marking bootstrap as complete, I verify:
 
 **Issue:** "Port 3001 already in use"
 **Fix:** Kill existing process: `lsof -ti:3001 | xargs kill`
+
+**Issue:** "Invalid IP address" during compose
+**Fix:** Check `apso-compose.sh` isn't appending `:5432` to DATABASE_PORT
+
+**Issue:** "FATAL: password authentication failed for user 'root'"
+**Fix:** Provision scripts should use `${DATABASE_USERNAME}` and `${DATABASE_PASSWORD}` from env
+
+**Issue:** "API: command not found" when loading .env
+**Fix:** Quote values with spaces: `APP_NAME="My API"` not `APP_NAME=My API`
 
 ## What's Next?
 

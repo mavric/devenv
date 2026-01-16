@@ -251,76 +251,41 @@ Phase 4: Polish (Week 10-12)
 
 ---
 
-## Phase 5: Backend Implementation
+## Phase 5+: Implementation
 
-**Duration:** Variable (days to weeks)
-**Skills:** `backend-bootstrapper`, `auth-bootstrapper`
+**Duration:** Variable (weeks to months)
+**See:** [Implementation Phases](implementation-phases.md) for detailed guidance
 
-### What Happens
+### The Implementation Approach
 
-1. Run automated setup script
-2. Apso generates NestJS backend
-3. BetterAuth authentication configured
-4. Database created and migrated
-5. API endpoints verified
+!!! tip "Screens First, Auth Last"
+    Build all UI screens with mock data first, wire up the backend, add billing, then seal with authentication.
 
-### Commands
+### Implementation Phases
 
-```bash
-# Automated setup
-./scripts/setup-apso-betterauth.sh
+| Phase | Focus | Auth Required |
+|-------|-------|---------------|
+| Foundation | Layout, nav, routes | No |
+| Screens | All UI with mock data | No |
+| Backend & API | Schema + real data | No |
+| Billing | Stripe integration | No |
+| Auth | BetterAuth | Yes |
+| Polish | QA, performance | Yes |
 
-# Verify
-./scripts/verify-setup.sh
-```
+This approach enables:
 
-### Artifacts Created
-
-- `backend/` - Complete NestJS application
-- REST API with CRUD for all entities
-- OpenAPI documentation
-- Authentication endpoints
-
----
-
-## Phase 6: Frontend Implementation
-
-**Duration:** Variable
-**Output:** Next.js application
-
-### What Happens
-
-1. Next.js application created
-2. BetterAuth client configured
-3. UI components built
-4. API integration implemented
+- **Faster UI iteration** without auth overhead
+- **Parallel frontend/backend development**
+- **Earlier stakeholder feedback** on UX
+- **Auth as a "seal"** rather than a blocker
 
 ### Artifacts Created
 
 - `frontend/` - Complete Next.js application
-
----
-
-## Phase 7+: Feature Implementation
-
-**Duration:** Variable
-**Skill:** `feature-builder`
-
-### What Happens
-
-For each feature:
-
-1. Claude reads Gherkin scenarios
-2. Implements backend endpoints
-3. Builds frontend UI
-4. Writes tests
-5. Verifies against scenarios
-
-### Iteration Loop
-
-```
-Read scenario → Implement → Test → Verify → Next scenario
-```
+- `backend/` - Apso RC schema and configuration
+- API integrations
+- Authentication flows
+- Billing integration
 
 ---
 

@@ -10,9 +10,30 @@ Templates used by the Mavric toolchain to generate consistent project artifacts.
 | `discovery-template.md` | Requirements document structure | `discovery-interviewer` |
 | `technical-plan.md` | Architecture and planning | `/plan` |
 | `roadmap-template.md` | Phased delivery plan | `saas-project-orchestrator` |
+| `roadmap-screens-first.md` | Screens-first 6-phase approach | `saas-project-orchestrator` |
+| `ralph-saas-prompt.md` | AI agent prompt for SaaS builds | Manual |
 | `scenario-template.feature` | Gherkin test structure | `test-generator` |
 | `quickstart.md` | Critical path validation | `saas-project-orchestrator` |
 | `verification-report.md` | Artifact consistency report | `/verify` |
+
+### Screens-First Development Templates
+
+The **screens-first** approach builds all UI before backend:
+
+1. **`roadmap-screens-first.md`** - 6-phase roadmap:
+   - Phase 1: Foundation & Layout (no auth)
+   - Phase 2: All Screens (mock data)
+   - Phase 3: Backend Schema & API
+   - Phase 4: Billing & Payments
+   - Phase 5: Authentication
+   - Phase 6: Polish & QA
+
+2. **`ralph-saas-prompt.md`** - Autonomous AI agent prompt template with:
+   - Project context placeholders
+   - Tech stack (non-negotiable)
+   - Phase-by-phase deliverables
+   - Domain knowledge sections
+   - Working conventions
 
 ## Customizing Templates
 

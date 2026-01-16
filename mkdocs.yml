@@ -113,6 +113,7 @@ nav:
     - Discovery-First Development: concepts/discovery-first.md
     - Project Structure: concepts/project-structure.md
     - The Development Workflow: concepts/workflow.md
+    - Implementation Phases: concepts/implementation-phases.md
   - Commands:
     - Overview: commands/index.md
     - /start-project: commands/start-project.md
