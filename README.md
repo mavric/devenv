@@ -87,6 +87,7 @@ your-project/
 | `/schema` | Design or update database schema |
 | `/tests` | Generate test scenarios |
 | `/verify` | Verify project setup and consistency |
+| `/ralph-export` | Export artifacts to Ralph format for autonomous development |
 
 ## Documentation
 
