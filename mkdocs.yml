@@ -150,3 +150,7 @@ nav:
     - Tech Stack: reference/tech-stack.md
     - API Patterns: reference/api-patterns.md
     - Troubleshooting: reference/troubleshooting.md
+  - Changelog:
+    - Overview: changelog/index.md
+    - v1.1 - Discovery-First: changelog/v1.1.md
+    - v1.0 - Initial Skills: changelog/v1.0.md
