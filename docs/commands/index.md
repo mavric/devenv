@@ -34,6 +34,12 @@ Commands are shortcuts you can type in Claude Code to invoke specific workflows.
 |---------|---------|-------------|
 | [`/verify`](verify.md) | Check artifact consistency | Before major phases, for QA |
 
+### Integration & Export
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| [`/ralph-export`](ralph-export.md) | Export to Ralph format | For autonomous development |
+
 ---
 
 ## Planned Capability Commands

@@ -108,6 +108,7 @@ nav:
     - Your First Project: getting-started/first-project.md
   - Core Concepts:
     - Overview: concepts/overview.md
+    - Scenario-Driven Development: concepts/scenario-driven-development.md
     - Why Mavric?: concepts/why-mavric.md
     - SaaS Capabilities: concepts/saas-capabilities.md
     - Discovery-First Development: concepts/discovery-first.md
@@ -123,6 +124,7 @@ nav:
     - /tests: commands/tests.md
     - /plan: commands/plan.md
     - /verify: commands/verify.md
+    - /ralph-export: commands/ralph-export.md
   - Skills:
     - Overview: skills/index.md
     - SaaS Project Orchestrator: skills/saas-project-orchestrator.md
