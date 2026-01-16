@@ -2,13 +2,13 @@
 title: Home
 ---
 
-# Mavric AI Toolchain
+# Mavric DevEnv
 
 <div class="hero" markdown>
 
-<p class="tagline">**Scenario-Driven SaaS Builder for Claude Code**</p>
+<p class="tagline">**AI-powered skills for Claude Code**</p>
 
-Stop generating boilerplate. Start building the right product.
+A skills pack that guides you through building production-ready SaaS applications using proven methodologies (BDD, TDD, DDD).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
@@ -21,176 +21,131 @@ curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bas
 
 ---
 
-## The Problem with Boilerplates
+## What This Is
 
-Most developers building SaaS products reach for a **boilerplate** or **generator**:
+A **Claude Code skills pack** that adds:
 
-- [BuilderKit.ai](https://www.builderkit.ai) - Next.js templates with AI apps
-- [SaaSBold](https://saasbold.com) - Full-stack SaaS starter kit
-- [Divjoy](https://divjoy.com) - React codebase generator
+- **AI Skills** - Specialized modules for discovery, schema design, backend setup, and feature implementation
+- **Slash Commands** - `/start-project`, `/discovery-only`, `/schema`, `/tests`, `/verify`, `/ralph-export`
+- **Reference Standards** - Tech stack patterns, testing methodology, and code standards
 
-**These give you code. But code isn't the problem.**
-
-!!! danger "The Real Problem"
-    **60% of software projects fail due to poor requirements, not poor code.**
-
-    Boilerplates help you build faster. They don't help you build the *right thing*.
+When you install this and open Claude Code, you get an AI that knows how to build SaaS applications using proven methodologies instead of just writing code.
 
 ---
 
-## A Different Approach
+## Install
 
-Mavric AI Toolchain is a **scenario-driven SaaS builder** that works inside [Claude Code](https://claude.com/claude-code). Instead of generating boilerplate and hoping you figure out what to build, Mavric:
+Run this in your project directory:
 
-1. **Extracts requirements** through structured 90-minute discovery interviews
-2. **Generates test scenarios** that define what success looks like
-3. **Designs your schema** based on actual workflows, not assumptions
-4. **Then builds the code** - with tests already written
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Traditional Approach                                    │
-│  ─────────────────────                                  │
-│  Idea → Boilerplate → Code → "What did we miss?" → Fix  │
-│                                          ↑              │
-│                                   (expensive rework)     │
-└─────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────┐
-│  Mavric Approach                                        │
-│  ───────────────                                        │
-│  Idea → Discovery → Tests → Schema → Code → Deploy      │
-│              ↑                                          │
-│       (90 min investment, prevents weeks of rework)     │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-## How It Works
-
-In Claude Code, run:
-
-```
-/start-project
-```
-
-Mavric orchestrates a complete workflow:
-
-| Phase | What Happens | Output |
-|-------|--------------|--------|
-| **Discovery** | 90-min structured interview | Requirements document |
-| **Scenarios** | AI generates Gherkin tests | Executable specifications |
-| **Schema** | Multi-tenant data design | `.apsorc` schema file |
-| **Brief** | Synthesize into PRD | Product requirements doc |
-| **Build** | Generate backend + auth | Running Apso + BetterAuth |
-| **Iterate** | Build features with tests | Complete application |
-
-Each phase requires your approval before proceeding. No runaway AI.
-
----
-
-## Why This Works
-
-### Boilerplates Give You Structure
-
-```
-my-saas/
-├── src/
-├── components/
-├── lib/
-└── ... (you figure out the rest)
-```
-
-### Mavric Gives You a Complete System
-
-```
-my-saas/
-├── docs/
-│   ├── discovery-notes.md      # What you're building and why
-│   ├── product-requirements.md # Complete PRD
-│   └── scenarios/              # Gherkin acceptance criteria
-├── backend/
-│   ├── .apsorc                 # Schema designed for YOUR workflows
-│   ├── src/autogen/            # Generated REST API
-│   └── src/extensions/         # Your custom logic
-└── frontend/
-    └── ...                     # Connected to your backend
-```
-
----
-
-## The Core Philosophy
-
-!!! quote "Discovery First"
-    **"Incomplete or bad information at discovery leads to incomplete or bad implementation later."**
-
-Traditional tools optimize for **speed to first commit**. Mavric optimizes for **speed to correct product**.
-
-| Metric | Boilerplate | Mavric |
-|--------|-------------|--------|
-| Time to first code | 5 minutes | 2 hours |
-| Requirements documented | No | Yes |
-| Tests written before code | No | Yes |
-| Multi-tenancy designed | Maybe | Always |
-| Scope creep prevented | No | Yes |
-| **Time to correct product** | Weeks-months | Days |
-
----
-
-## Built on Claude Code Skills
-
-Mavric uses Claude Code's [skills system](https://www.anthropic.com/news/skills) - specialized AI modules that handle specific tasks:
-
-| Skill | Purpose |
-|-------|---------|
-| `saas-project-orchestrator` | Coordinates the entire workflow |
-| `discovery-interviewer` | Conducts 90-minute requirements interview |
-| `schema-architect` | Designs multi-tenant data models |
-| `test-generator` | Creates Gherkin acceptance scenarios |
-| `backend-bootstrapper` | Sets up Apso + BetterAuth |
-| `feature-builder` | Implements features with tests |
-
-Similar to [awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) collections, but **opinionated and integrated** into a complete methodology.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **AI Interface** | Claude Code |
-| **Backend** | Apso (NestJS + PostgreSQL) |
-| **Frontend** | Next.js 14+ (App Router) |
-| **Auth** | BetterAuth |
-| **Testing** | Cucumber/Gherkin (BDD) |
-| **Payments** | Stripe |
-
----
-
-## Quick Start
-
-**1. Install Claude Code**
 ```bash
-npm install -g @anthropic-ai/claude-code
-claude login
-```
-
-**2. Install Mavric**
-```bash
-mkdir my-saas-project && cd my-saas-project
 curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 ```
 
-**3. Start Building**
-```bash
-claude
+Then restart Claude Code.
+
+---
+
+## Usage
+
+Open Claude Code and say:
+
+```
+I want to build a SaaS for [your idea]
 ```
 
-Then in Claude Code:
+The AI guides you through:
+
+1. **Discovery** - 90-minute structured interview to extract complete requirements
+2. **Scenarios** - Gherkin specs that serve as requirements, tests, and documentation
+3. **Schema** - Multi-tenant database design from your scenarios
+4. **Implementation** - Backend and frontend code that satisfies the scenarios
+5. **Validation** - Automated tests proving everything works
+
+---
+
+## What Gets Installed
+
 ```
-/start-project
+your-project/
+├── .claude/
+│   ├── commands/           # Slash commands
+│   │   ├── start-project.md
+│   │   ├── discovery-only.md
+│   │   └── ...
+│   ├── skills/             # AI skills
+│   │   ├── saas-project-orchestrator/
+│   │   ├── discovery-interviewer/
+│   │   ├── schema-architect/
+│   │   ├── backend-bootstrapper/
+│   │   ├── auth-bootstrapper/
+│   │   ├── test-generator/
+│   │   ├── feature-builder/
+│   │   └── product-brief-writer/
+│   └── templates/          # Prompt templates
+└── .devenv/
+    ├── standards/          # Development standards
+    ├── docs/               # Reference documentation
+    └── setup/              # Setup scripts and templates
 ```
+
+---
+
+## Available Skills
+
+| Skill | What It Does |
+|-------|--------------|
+| `saas-project-orchestrator` | Guides entire project lifecycle |
+| `discovery-interviewer` | Conducts structured requirements interview |
+| `schema-architect` | Designs database schema from requirements |
+| `backend-bootstrapper` | Sets up Apso + NestJS backend |
+| `auth-bootstrapper` | Adds BetterAuth authentication |
+| `test-generator` | Creates BDD/Gherkin test scenarios |
+| `feature-builder` | Implements features full-stack |
+| `product-brief-writer` | Generates PRD from discovery |
+
+[View all skills →](skills/index.md)
+
+---
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start-project` | Start new project with full discovery workflow |
+| `/discovery-only` | Run discovery interview without implementation |
+| `/schema` | Design or update database schema |
+| `/tests` | Generate test scenarios |
+| `/verify` | Verify project setup and consistency |
+| `/ralph-export` | Export artifacts to Ralph format |
+
+[View all commands →](commands/index.md)
+
+---
+
+## Requirements
+
+- **Claude Code** - Latest version
+- **Node.js** - 18.0.0 or higher
+- **PostgreSQL** - For backend projects
+
+---
+
+## The Methodology
+
+Mavric uses **scenario-driven development** - a methodology where Gherkin scenarios serve as requirements, acceptance tests, and living documentation.
+
+```
+Human Intent → Discovery → Gherkin Scenarios → Schema → Implementation → Validation
+                              │
+                              │ defines WHAT gets built
+                              ▼
+                    ┌─────────────────────────────────┐
+                    │  specs/scenarios/               │
+                    │  (Single Source of Truth)       │
+                    └─────────────────────────────────┘
+```
+
+[Learn more about the methodology →](concepts/scenario-driven-development.md)
 
 ---
 
@@ -199,17 +154,17 @@ Then in Claude Code:
 <div class="feature-grid" markdown>
 
 <div class="feature-card" markdown>
-### :material-help-circle: Why Mavric?
-Deep dive into the methodology vs boilerplates.
-
-[Learn More →](concepts/why-mavric.md)
-</div>
-
-<div class="feature-card" markdown>
 ### :material-play-circle: Quick Start
 Get up and running in 5 minutes.
 
 [Quick Start →](getting-started/quickstart.md)
+</div>
+
+<div class="feature-card" markdown>
+### :material-help-circle: Why Mavric?
+Deep dive into the methodology vs boilerplates.
+
+[Learn More →](concepts/why-mavric.md)
 </div>
 
 <div class="feature-card" markdown>
