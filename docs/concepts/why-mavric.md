@@ -512,9 +512,9 @@ Ready to try the discovery-first approach?
 npm install -g @anthropic-ai/claude-code
 claude login
 
-# Clone Mavric
-git clone https://github.com/mavric/devenv.git
-cd devenv
+# Install Mavric
+mkdir my-saas-project && cd my-saas-project
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 
 # Start Claude Code
 claude

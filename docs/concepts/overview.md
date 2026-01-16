@@ -6,7 +6,7 @@ Understanding the methodology that makes Mavric different from boilerplates and 
 
 ## The Mavric Methodology
 
-Mavric is not a boilerplate. It's not a code generator. It's an **AI-driven SaaS builder** with an opinionated methodology:
+Mavric is not a boilerplate. It's not a code generator. It's a **scenario-driven SaaS builder** with an opinionated methodology:
 
 !!! quote "The Core Insight"
     **The best code is code you didn't have to rewrite because you understood what to build from the start.**

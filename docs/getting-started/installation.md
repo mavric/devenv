@@ -119,15 +119,15 @@ claude --version
 
 ## Step 3: Create Your Project
 
-Create a new folder for your project and copy the Mavric toolchain into it:
+Create a new folder for your project and install the Mavric toolchain:
 
 ```bash
 # Create your project folder
 mkdir my-saas-project
 cd my-saas-project
 
-# Copy the toolchain (without git history)
-npx degit mavric/devenv/install .
+# Install the toolchain
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 
 # Initialize your own git repo
 git init
@@ -136,18 +136,7 @@ git commit -m "Initial commit: Mavric toolchain setup"
 ```
 
 !!! info "Your Project, Your Repo"
-    This copies the toolchain files into your project without the devenv git history. You get a clean starting point with your own repository.
-
-**Alternative (without npx):**
-
-```bash
-mkdir my-saas-project
-cd my-saas-project
-git clone --depth 1 https://github.com/mavric/devenv.git temp
-mv temp/install/* temp/install/.* . 2>/dev/null
-rm -rf temp
-git init
-```
+    The installer copies toolchain files into your project. You get a clean starting point for your own repository.
 
 ---
 
@@ -219,24 +208,13 @@ To add Mavric AI Toolchain to an existing project:
 ```bash
 cd /path/to/your/project
 
-# Copy toolchain into your project
-npx degit mavric/devenv/install .
-```
-
-Or manually:
-
-```bash
-# Copy .claude folder (skills and commands)
-cp -r /path/to/devenv/install/.claude /path/to/your/project/
-
-# Copy .devenv folder (standards and templates)
-cp -r /path/to/devenv/install/.devenv /path/to/your/project/
+# Install toolchain into your project
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 ```
 
 Then launch Claude Code in your project:
 
 ```bash
-cd /path/to/your/project
 claude
 ```
 
@@ -263,15 +241,14 @@ mkdocs serve
 
 ## Updating
 
-To update to the latest toolchain version:
+To update to the latest toolchain version, re-run the installer:
 
 ```bash
 # From your project directory
 cd my-saas-project
 
-# Pull latest toolchain files (preserves your customizations)
-npx degit mavric/devenv/install/.claude .claude --force
-npx degit mavric/devenv/install/.devenv .devenv --force
+# Re-run the installer
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 ```
 
 !!! tip "What Gets Updated"

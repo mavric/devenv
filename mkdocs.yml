@@ -1,5 +1,5 @@
 site_name: Mavric AI Toolchain
-site_description: Mavric's AI-Assisted Development Toolchain for building production-ready SaaS applications
+site_description: Scenario-driven SaaS builder for Claude Code - extract requirements, generate tests, build the right product
 site_url: https://mavric.github.io/devenv
 repo_url: https://github.com/mavric/devenv
 repo_name: mavric/devenv
@@ -45,7 +45,6 @@ theme:
     repo: fontawesome/brands/github
 
   logo: assets/logo.svg
-  favicon: assets/favicon.png
 
 plugins:
   - search

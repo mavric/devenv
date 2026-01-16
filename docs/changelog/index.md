@@ -37,7 +37,7 @@ Each release may include:
 
 ## Upgrade Notes
 
-When upgrading DevEnv, re-run the install command:
+When upgrading DevEnv, re-run the install command from your project directory:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
@@ -45,10 +45,10 @@ curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bas
 
 The installer will:
 
-1. Merge new skills into your `.claude/skills/` directory
-2. Merge new commands into `.claude/commands/`
+1. Update skills in your `.claude/skills/` directory
+2. Update commands in `.claude/commands/`
 3. Update `.devenv/` standards and documentation
-4. Preserve any customizations you've made
+4. Preserve your project files and customizations
 
 ---
 

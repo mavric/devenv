@@ -43,43 +43,31 @@ psql --version   # Should be 13.x or higher
 
 ---
 
-## Step 1: Create Your Project
+## Step 1: Install Mavric
 
-Create a new folder for your project and copy the Mavric toolchain into it:
+Run the one-line installer in your project directory:
 
 ```bash
 # Create your project folder
 mkdir my-saas-project
 cd my-saas-project
 
-# Copy the toolchain (without git history)
-npx degit mavric/devenv/install .
-
-# Initialize your own git repo
-git init
-git add .
-git commit -m "Initial commit: Mavric toolchain setup"
+# Install Mavric
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 ```
 
-!!! tip "Why degit?"
-    `degit` copies the repository contents without the `.git` folder, giving you a clean starting point for your own project. No need to install it - `npx` runs it directly.
+That's it! The installer adds:
 
-**Alternative (without npx):**
+- `.claude/` - AI skills and commands
+- `.devenv/` - Development standards and references
 
-```bash
-mkdir my-saas-project
-cd my-saas-project
-
-# Clone and extract install folder
-git clone --depth 1 https://github.com/mavric/devenv.git temp
-mv temp/install/* temp/install/.* . 2>/dev/null
-rm -rf temp
-
-# Start fresh
-git init
-git add .
-git commit -m "Initial commit: Mavric toolchain setup"
-```
+!!! tip "Initialize Git"
+    After installing, initialize your repo:
+    ```bash
+    git init
+    git add .
+    git commit -m "Initial commit: Mavric toolchain setup"
+    ```
 
 ---
 

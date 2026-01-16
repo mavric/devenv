@@ -6,9 +6,13 @@ title: Home
 
 <div class="hero" markdown>
 
-<p class="tagline">**AI-Driven SaaS Builder for Claude Code**</p>
+<p class="tagline">**Scenario-Driven SaaS Builder for Claude Code**</p>
 
 Stop generating boilerplate. Start building the right product.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
+```
 
 [Get Started](getting-started/quickstart.md){ .md-button .md-button--primary }
 [Why Mavric?](concepts/why-mavric.md){ .md-button }
@@ -36,7 +40,7 @@ Most developers building SaaS products reach for a **boilerplate** or **generato
 
 ## A Different Approach
 
-Mavric AI Toolchain is an **AI-driven SaaS builder** that works inside [Claude Code](https://claude.com/claude-code). Instead of generating boilerplate and hoping you figure out what to build, Mavric:
+Mavric AI Toolchain is a **scenario-driven SaaS builder** that works inside [Claude Code](https://claude.com/claude-code). Instead of generating boilerplate and hoping you figure out what to build, Mavric:
 
 1. **Extracts requirements** through structured 90-minute discovery interviews
 2. **Generates test scenarios** that define what success looks like
@@ -172,10 +176,10 @@ npm install -g @anthropic-ai/claude-code
 claude login
 ```
 
-**2. Clone Mavric**
+**2. Install Mavric**
 ```bash
-git clone https://github.com/mavric/devenv.git
-cd devenv
+mkdir my-saas-project && cd my-saas-project
+curl -fsSL https://raw.githubusercontent.com/mavric/devenv/main/install.sh | bash
 ```
 
 **3. Start Building**
