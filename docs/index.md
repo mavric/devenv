@@ -6,7 +6,7 @@ title: Home
 
 <div class="hero" markdown>
 
-<p class="tagline">**AI-powered skills for Claude Code**</p>
+<p class="tagline"><strong>AI-powered skills for Claude Code</strong></p>
 
 A skills pack that guides you through building production-ready SaaS applications using proven methodologies (BDD, TDD, DDD).
 
